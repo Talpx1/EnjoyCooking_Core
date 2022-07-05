@@ -20,10 +20,51 @@ class PermissionRoleSeeder extends Seeder {
      */
     public function run() {
 
-        $everyonePermissions = [Permission::ShowRecipe->value];
-        $userPermissions = array_merge($everyonePermissions, [Permission::CreateRecipe->value, Permission::StoreRecipe->value, Permission::EditRecipe->value, Permission::UpdateRecipe->value, Permission::DestroyRecipe->value]);
-        $moderatorPermissions = array_merge($everyonePermissions, [Permission::ApproveRecipe->value, Permission::RejectRecipe->value]);
-        $adminPermissions = array_merge($everyonePermissions, $moderatorPermissions, []);
+        $everyonePermissions = [
+            Permission::ShowRecipe->value,
+            Permission::ShowIngredient->value,
+            Permission::ShowTag->value,
+        ];
+
+        $userPermissions = array_merge($everyonePermissions, [
+            Permission::CreateRecipe->value,
+            Permission::StoreRecipe->value,
+            Permission::EditRecipe->value,
+            Permission::UpdateRecipe->value,
+            Permission::DestroyRecipe->value,
+            Permission::StoreRecipeImage->value,
+            Permission::DestroyRecipeImage->value,
+            Permission::StoreRecipeVideo->value,
+            Permission::DestroyRecipeVideo->value,
+            Permission::CreateIngredient->value,
+            Permission::StoreIngredient->value,
+            Permission::EditIngredient->value,
+            Permission::UpdateIngredient->value,
+            Permission::DestroyIngredient->value,
+            Permission::StoreIngredientImage->value,
+            Permission::DestroyIngredientVideo->value,
+            Permission::CreateTag->value,
+            Permission::StoreTag->value,
+        ]);
+
+        $moderatorPermissions = array_merge($everyonePermissions, [
+            Permission::ApproveRecipe->value,
+            Permission::RejectRecipe->value,
+            Permission::ApproveIngredient->value,
+            Permission::RejectIngredient->value,
+            Permission::ApproveIngredientImage->value,
+            Permission::RejectIngredientVideo->value,
+            Permission::DestroyIngredientImage->value,
+            Permission::DestroyIngredientVideo->value,
+            Permission::ApproveTag->value,
+            Permission::RejectTag->value,
+        ]);
+
+        $adminPermissions = array_merge($everyonePermissions, $moderatorPermissions, [
+            Permission::EditTag->value,
+            Permission::UpdateTag->value,
+            Permission::DestroyTag->value,
+        ]);
 
         Role::findByName(EnumsRole::Admin->value)->givePermissionTo($adminPermissions);
         Role::findByName(EnumsRole::Moderator->value)->givePermissionTo($moderatorPermissions);

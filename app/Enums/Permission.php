@@ -30,9 +30,13 @@ enum Permission: string {
         //ingredient image
     case StoreIngredientImage = "store_ingredient_image";
     case DestroyIngredientImage = "destroy_ingredient_image";
+    case ApproveIngredientImage = "approve_ingredient_image";
+    case RejectIngredientImage = "reject_ingredient_image";
         //ingredient video
     case StoreIngredientVideo = "store_ingredient_video";
     case DestroyIngredientVideo = "destroy_ingredient_video";
+    case ApproveIngredientVideo = "approve_ingredient_video";
+    case RejectIngredientVideo = "reject_ingredient_video";
         //tag
     case CreateTag = "create_tag";
     case StoreTag = "store_tag";
