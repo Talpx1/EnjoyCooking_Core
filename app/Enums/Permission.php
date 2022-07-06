@@ -76,6 +76,7 @@ enum Permission: string {
     case EditComment = "edit_comment";
     case UpdateComment = "update_comment";
     case DestroyComment = "destroy_comment";
+    case BanComment = "ban_comment";
         //snack
     case CreateSnack = "create_snack";
     case StoreSnack = "store_snack";
@@ -83,12 +84,14 @@ enum Permission: string {
     case UpdateSnack = "update_snack";
     case DestroySnack = "destroy_snack";
     case ShowSnack = "show_snack";
+    case BanSnack = "ban_snack";
         //badge
     case CreateBadge = "create_badge";
     case StoreBadge = "store_badge";
     case EditBadge = "edit_badge";
     case UpdateBadge = "update_badge";
     case DestroyBadge = "destroy_badge";
+    case AssignBadge = "assign_badge";
         //favorite
     case StoreFavorite = "store_favorite";
     case DestroyFavorite = "destroy_favorite";
@@ -104,10 +107,14 @@ enum Permission: string {
     case EditExecution = "edit_execution";
     case UpdateExecution = "update_execution";
     case DestroyExecution = "destroy_execution";
+    case BanExecution = "ban_execution";
         //execution image
     case StoreExecutionImage = "store_execution_image";
     case DestroyExecutionImage = "destroy_execution_image";
         //execution video
     case StoreExecutionVideo = "store_execution_video";
     case DestroyExecutionVideo = "destroy_execution_video";
+        //user
+    case BanUser = "ban_user";
+    case ForgiveUser = "forgive_user";
 }
