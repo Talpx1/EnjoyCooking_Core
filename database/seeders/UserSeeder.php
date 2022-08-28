@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Enums\Role;
+use App\Enums\Roles;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -16,15 +16,15 @@ class UserSeeder extends Seeder {
      */
     public function run() {
         //super admin
-        User::factory()->create(["name" => "SuperAdmin", "email" => "superadmin@enjoy.cooking", "password" => Hash::make("superadmin")])
-            ->assignRole(Role::SuperAdmin->value);
+        User::factory()->create(["name" => "SuperAdmin", "email" => "superadmin@enjoy.cooking", "password" => "superadmin"])
+            ->assignRole(Roles::SUPER_ADMIN->value);
         //admin
-        User::factory()->create(["name" => "Admin", "email" => "admin@enjoy.cooking", "password" => Hash::make("admin")])
-            ->assignRole(Role::Admin->value);
+        User::factory()->create(["name" => "Admin", "email" => "admin@enjoy.cooking", "password" => "admin"])
+            ->assignRole(Roles::ADMIN->value);
         //moderator
-        User::factory()->create(["name" => "Moderator", "email" => "moderator@enjoy.cooking", "password" => Hash::make("moderator")])
-            ->assignRole(Role::Moderator->value);
+        User::factory()->create(["name" => "Moderator", "email" => "moderator@enjoy.cooking", "password" => "moderator"])
+            ->assignRole(Roles::MODERATOR->value);
         //user
-        User::factory()->create(["name" => "User", "email" => "user@enjoy.cooking", "password" => Hash::make("user")]);
+        User::factory()->create(["name" => "User", "email" => "user@enjoy.cooking", "password" => "user"]);
     }
 }
