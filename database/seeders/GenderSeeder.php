@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Enums\ModerationStatuses;
-use App\Models\ModerationStatus;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Enums\Genders;
+use App\Models\Gender;
 
-class ModerationStatusSeeder extends Seeder
+class GenderSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -16,6 +16,6 @@ class ModerationStatusSeeder extends Seeder
      */
     public function run()
     {
-        foreach (ModerationStatuses::cases() as $role) ModerationStatus::create(["name" => $role->normalizedName()]);
+        foreach (Genders::cases() as $gender) Gender::create(["name" => $gender->normalizedName()]);
     }
 }

@@ -41,5 +41,31 @@ class User extends Authenticatable {
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'date_of_birth' => 'date',
     ];
+
+    public function reposts()
+    {
+        return $this->hasMany(Repost::class);
+    }
+
+    public function type()
+    {
+        return $this->belongsTo(UserType::class, 'user_type_id');
+    }
+
+    public function gender()
+    {
+        return $this->belongsTo(Gender::class);
+    }
+
+    public function professionGroup()
+    {
+        return $this->belongsTo(ProfessionGroup::class);
+    }
+
+    public function badges()
+    {
+        return $this->belongsToMany(Badge::class);
+    }
 }

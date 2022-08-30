@@ -5,12 +5,11 @@ namespace App\Enums;
 use App\Enums\Traits\EnumAsArray;
 use App\Enums\Traits\NormalizeNames;
 
-enum ModerationStatuses: int {
+enum Genders: int {
 
     use EnumAsArray, NormalizeNames;
 
-    case PENDING_MODERATION = 1;
-    case UNDER_MODERATION = 2;
-    case APPROVED = 3;
-    case REJECTED = 4;
+    case MALE = 1;
+    case FEMALE = 2;
+    case NON_BINARY = 3;
 }

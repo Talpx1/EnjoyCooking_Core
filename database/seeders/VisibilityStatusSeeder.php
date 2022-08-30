@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Enums\VisibilityStatuses;
+use App\Models\VisibilityStatus;
 
 class VisibilityStatusSeeder extends Seeder
 {
@@ -14,6 +16,6 @@ class VisibilityStatusSeeder extends Seeder
      */
     public function run()
     {
-        //
+        foreach (VisibilityStatuses::cases() as $visibility_status) VisibilityStatus::create(["name" => $visibility_status->normalizedName()]);
     }
 }

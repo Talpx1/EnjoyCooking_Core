@@ -2,12 +2,12 @@
 
 namespace Database\Seeders;
 
-use App\Enums\ModerationStatuses;
-use App\Models\ModerationStatus;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Enums\UserTypes;
+use App\Models\UserType;
 
-class ModerationStatusSeeder extends Seeder
+class UserTypeSeeder extends Seeder
 {
     /**
      * Run the database seeds.
@@ -16,6 +16,6 @@ class ModerationStatusSeeder extends Seeder
      */
     public function run()
     {
-        foreach (ModerationStatuses::cases() as $role) ModerationStatus::create(["name" => $role->normalizedName()]);
+        foreach (UserTypes::cases() as $user_types) UserType::create(["name" => $user_types->normalizedName()]);
     }
 }

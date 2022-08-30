@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use App\Enums\Permissions;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Permission as ModelsPermission;
+use Spatie\Permission\Models\Permission;
 
 class PermissionSeeder extends Seeder {
     /**
@@ -14,6 +14,6 @@ class PermissionSeeder extends Seeder {
      * @return void
      */
     public function run() {
-        foreach (Permissions::cases() as $permission) ModelsPermission::create(["name" => $permission->value]);
+        foreach (Permissions::cases() as $permission) Permission::create(["name" => $permission->value]);
     }
 }

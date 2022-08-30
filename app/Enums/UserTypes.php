@@ -5,12 +5,10 @@ namespace App\Enums;
 use App\Enums\Traits\EnumAsArray;
 use App\Enums\Traits\NormalizeNames;
 
-enum ModerationStatuses: int {
+enum UserTypes: int {
 
     use EnumAsArray, NormalizeNames;
 
-    case PENDING_MODERATION = 1;
-    case UNDER_MODERATION = 2;
-    case APPROVED = 3;
-    case REJECTED = 4;
+    case STANDARD = 1;
+    case COMPANY = 2;
 }
