@@ -9,6 +9,7 @@ use App\Models\Repost;
 use App\Models\User;
 use App\Models\Category;
 use App\Models\DifficultyLevel;
+use App\Models\Recipe;
 
 class RepostTest extends TestCase
 {
@@ -71,16 +72,16 @@ class RepostTest extends TestCase
      * @test
      */
     public function test_morphs_to_repostable(){
-        //TODO: replace category and difficulty level with recipe and other repostables
-        $category = Category::factory()->create();
+        //TODO: replace difficulty level with other repostables
+        $recipe = Recipe::factory()->create();
         $difficulty_level = DifficultyLevel::factory()->create();
 
-        $repost1 = Repost::factory()->create(['repostable_id' => $category->id,'repostable_type' => $category::class]);
+        $repost1 = Repost::factory()->create(['repostable_id' => $recipe->id,'repostable_type' => $recipe::class]);
         $repost2 = Repost::factory()->create(['repostable_id' => $difficulty_level->id,'repostable_type' => $difficulty_level::class]);
 
         $this->assertNotNull($repost1->repostable);
-        $this->assertInstanceOf($category::class, $repost1->repostable);
-        $this->assertEquals($category->id, $repost1->repostable->id);
+        $this->assertInstanceOf($recipe::class, $repost1->repostable);
+        $this->assertEquals($recipe->id, $repost1->repostable->id);
 
         $this->assertNotNull($repost2->repostable);
         $this->assertInstanceOf($difficulty_level::class, $repost2->repostable);
@@ -91,20 +92,19 @@ class RepostTest extends TestCase
      * @test
      */
     public function test_combination_of_repostable_id_repostable_type_user_id_must_be_unique(){
-        //TODO: replace category with recipe
-        $category = Category::factory()->create();
+        $recipe = Recipe::factory()->create();
         $user = User::factory()->create();
         $user2 = User::factory()->create();
 
-        Repost::factory()->create(['repostable_id' => $category->id,'repostable_type' => $category::class, 'user_id' => $user->id]);
-        $this->assertDatabaseHas('reposts', ['repostable_id' => $category->id,'repostable_type' => $category::class, 'user_id' => $user->id]);
+        Repost::factory()->create(['repostable_id' => $recipe->id,'repostable_type' => $recipe::class, 'user_id' => $user->id]);
+        $this->assertDatabaseHas('reposts', ['repostable_id' => $recipe->id,'repostable_type' => $recipe::class, 'user_id' => $user->id]);
 
-        Repost::factory()->create(['repostable_id' => $category->id,'repostable_type' => $category::class, 'user_id' => $user2->id]);
-        $this->assertDatabaseHas('reposts', ['repostable_id' => $category->id,'repostable_type' => $category::class, 'user_id' => $user2->id]);
+        Repost::factory()->create(['repostable_id' => $recipe->id,'repostable_type' => $recipe::class, 'user_id' => $user2->id]);
+        $this->assertDatabaseHas('reposts', ['repostable_id' => $recipe->id,'repostable_type' => $recipe::class, 'user_id' => $user2->id]);
 
         Repost::factory()->create(['repostable_id' => Category::factory()->create()->id,'repostable_type' => Category::class, 'user_id' => $user->id]);
 
         $this->expectException(QueryException::class);
-        Repost::factory()->create(['repostable_id' => $category->id,'repostable_type' => $category::class, 'user_id' => $user->id]);
+        Repost::factory()->create(['repostable_id' => $recipe->id,'repostable_type' => $recipe::class, 'user_id' => $user->id]);
     }
 }

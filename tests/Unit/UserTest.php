@@ -7,7 +7,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
 use App\Models\Repost;
 use Illuminate\Database\Eloquent\Collection;
-use App\Models\Category;
 use App\Enums\UserTypes;
 use Database\Seeders\UserTypeSeeder;
 use App\Models\UserType;
@@ -16,6 +15,7 @@ use App\Models\ProfessionGroup;
 use Illuminate\Database\QueryException;
 use App\Models\Badge;
 use App\Models\BadgeUser;
+use App\Models\Recipe;
 
 class UserTest extends TestCase
 {
@@ -26,18 +26,17 @@ class UserTest extends TestCase
      * @test
      */
     public function test_user_has_many_reposts(){
-        //TODO: replace category with recipe
         $user = User::factory()->create();
         $reposts = collect([
-            Repost::factory()->create(['repostable_id' => Category::factory()->create()->id, 'repostable_type' => Category::class, 'user_id' => $user->id]),
-            Repost::factory()->create(['repostable_id' => Category::factory()->create()->id, 'repostable_type' => Category::class, 'user_id' => $user->id]),
-            Repost::factory()->create(['repostable_id' => Category::factory()->create()->id, 'repostable_type' => Category::class, 'user_id' => $user->id]),
-            Repost::factory()->create(['repostable_id' => Category::factory()->create()->id, 'repostable_type' => Category::class, 'user_id' => $user->id]),
-            Repost::factory()->create(['repostable_id' => Category::factory()->create()->id, 'repostable_type' => Category::class, 'user_id' => $user->id]),
+            Repost::factory()->create(['repostable_id' => Recipe::factory()->create()->id, 'repostable_type' => Recipe::class, 'user_id' => $user->id]),
+            Repost::factory()->create(['repostable_id' => Recipe::factory()->create()->id, 'repostable_type' => Recipe::class, 'user_id' => $user->id]),
+            Repost::factory()->create(['repostable_id' => Recipe::factory()->create()->id, 'repostable_type' => Recipe::class, 'user_id' => $user->id]),
+            Repost::factory()->create(['repostable_id' => Recipe::factory()->create()->id, 'repostable_type' => Recipe::class, 'user_id' => $user->id]),
+            Repost::factory()->create(['repostable_id' => Recipe::factory()->create()->id, 'repostable_type' => Recipe::class, 'user_id' => $user->id]),
         ]);
         $other_reposts = collect([
-            Repost::factory()->create(['repostable_id' => Category::factory()->create()->id, 'repostable_type' => Category::class, 'user_id' => User::factory()->create()]),
-            Repost::factory()->create(['repostable_id' => Category::factory()->create()->id, 'repostable_type' => Category::class, 'user_id' => User::factory()->create()])
+            Repost::factory()->create(['repostable_id' => Recipe::factory()->create()->id, 'repostable_type' => Recipe::class, 'user_id' => User::factory()->create()]),
+            Repost::factory()->create(['repostable_id' => Recipe::factory()->create()->id, 'repostable_type' => Recipe::class, 'user_id' => User::factory()->create()])
         ]);
 
         $this->assertNotNull($user->reposts);
