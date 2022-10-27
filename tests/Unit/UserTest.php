@@ -121,11 +121,17 @@ class UserTest extends TestCase
         $this->assertDatabaseHas('users', ['company_name'=>'test 123']);
     }
 
+    /**
+     * @test
+     */
     public function test_date_of_bird_is_required(){
         $this->expectException(QueryException::class);
         User::factory()->create(['date_of_bird'=>null]);
     }
 
+    /**
+     * @test
+     */
     public function test_user_type_id_is_required(){
         $this->expectException(QueryException::class);
         User::factory()->create(['user_type_id'=>null]);
@@ -193,9 +199,28 @@ class UserTest extends TestCase
         $this->assertDatabaseHas('users', ['first_name'=>'test 123', 'email_verified_at'=>null]);
     }
 
+    /**
+     * @test
+     */
     public function test_password_is_required(){
         $this->expectException(QueryException::class);
         User::factory()->create(['password'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_instagram_url_is_nullable(){
+        User::factory()->create(['first_name' => 'test 123', 'instagram_url' => null]);
+        $this->assertDatabaseHas('users', ['first_name'=>'test 123', 'instagram_url' => null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_website_url_is_nullable(){
+        User::factory()->create(['first_name' => 'test 123', 'website_url'=>null]);
+        $this->assertDatabaseHas('users', ['first_name'=>'test 123', 'website_url'=>null]);
     }
 
     /**
@@ -217,6 +242,34 @@ class UserTest extends TestCase
 
         $user->badges->each(fn($badge)=>$this->assertTrue($badges->contains($badge)));
         $user->badges->each(fn($badge)=>$this->assertFalse($other_badges->contains($badge)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_user_has_many_recipes(){
+        $user = User::factory()->create();
+        $other_user = User::factory()->create();
+        $recipes = Recipe::factory(2)->create(['user_id' => $user->id]);
+        $other_recipes = Recipe::factory(4)->create(['user_id' => $other_user->id]);
+
+        $this->assertNotNull($user->recipes);
+        $this->assertNotNull($other_user->recipes);
+
+        $this->assertInstanceOf(Collection::class, $user->recipes);
+        $this->assertInstanceOf(Collection::class, $other_user->recipes);
+
+        $user->recipes->each(fn($recipe) => $this->assertInstanceOf(Recipe::class, $recipe));
+        $other_user->recipes->each(fn($recipe) => $this->assertInstanceOf(Recipe::class, $recipe));
+
+        $this->assertCount(2, $user->recipes);
+        $this->assertCount(4, $other_user->recipes);
+
+        $user->recipes->each(fn($recipe) => $this->assertTrue($recipes->contains($recipe)));
+        $user->recipes->each(fn($recipe) => $this->assertFalse($other_recipes->contains($recipe)));
+
+        $other_user->recipes->each(fn($recipe) => $this->assertTrue($other_recipes->contains($recipe)));
+        $other_user->recipes->each(fn($recipe) => $this->assertFalse($recipes->contains($recipe)));
     }
 }
 

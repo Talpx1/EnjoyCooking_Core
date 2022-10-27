@@ -2,6 +2,10 @@
 
 namespace Tests\Unit;
 
+use App\Models\RecipeVideo;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Database\QueryException;
@@ -18,7 +22,7 @@ use Illuminate\Support\Arr;
 class RecipeTest extends TestCase
 {
 
-    use RefreshDatabase;
+    use RefreshDatabase, WithFaker;
 
     /**
      * @test
@@ -475,5 +479,161 @@ class RecipeTest extends TestCase
 
         $this->assertModelMissing($recipe);
         $this->assertModelMissing($visibility_status);
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_has_many_recipe_videos(){
+        $recipe = Recipe::factory()->create(['title' => 'test']);
+        $recipe_videos = RecipeVideo::factory(2)->create(['recipe_id' => $recipe->id]);
+        $other_recipe_videos = RecipeVideo::factory(4)->create(['recipe_id'=>Recipe::factory()->create()->id]);
+
+        $this->assertNotNull($recipe->videos);
+
+        $this->assertInstanceOf(Collection::class, $recipe->videos);
+        $recipe->videos->each(fn($video) => $this->assertInstanceOf(RecipeVideo::class, $video));
+
+        $this->assertCount(2, $recipe->videos);
+
+        $recipe->videos->each(fn($video) => $this->assertTrue($recipe_videos->contains($video)));
+        $recipe->videos->each(fn($video) => $this->assertFalse($other_recipe_videos->contains($video)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_belongs_to_difficulty_level(){
+        $difficulty_level = DifficultyLevel::factory()->create();
+        $recipe = Recipe::factory()->create(['difficulty_level_id' => $difficulty_level->id]);
+        $this->assertNotNull($recipe->difficultyLevel);
+        $this->assertInstanceOf(DifficultyLevel::class, $recipe->difficultyLevel);
+        $this->assertEquals($recipe->difficultyLevel->id, $difficulty_level->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_child_recipe_belongs_to_parent_recipe(){
+        $parent = Recipe::factory()->create();
+        $child = Recipe::factory()->create(['parent_recipe_id' => $parent->id]);
+        $this->assertNotNull($child->parentRecipe);
+        $this->assertInstanceOf(Recipe::class, $child->parentRecipe);
+        $this->assertEquals($child->parentRecipe->id, $parent->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_has_many_child_recipes(){
+        $recipe = Recipe::factory()->create();
+        $other_recipe = Recipe::factory()->create();
+        $recipe_children = Recipe::factory(2)->create(['parent_recipe_id' => $recipe->id]);
+        $other_recipe_children = Recipe::factory(4)->create(['parent_recipe_id'=>$other_recipe->id]);
+
+        $this->assertNotNull($recipe->childRecipes);
+        $this->assertNotNull($other_recipe->childRecipes);
+
+        $this->assertInstanceOf(Collection::class, $recipe->childRecipes);
+        $this->assertInstanceOf(Collection::class, $other_recipe->childRecipes);
+
+        $recipe->childRecipes->each(fn($recipe) => $this->assertInstanceOf(Recipe::class, $recipe));
+        $other_recipe->childRecipes->each(fn($recipe) => $this->assertInstanceOf(Recipe::class, $recipe));
+
+        $this->assertCount(2, $recipe->childRecipes);
+        $this->assertCount(4, $other_recipe->childRecipes);
+
+        $recipe->childRecipes->each(fn($recipe) => $this->assertTrue($recipe_children->contains($recipe)));
+        $recipe->childRecipes->each(fn($recipe) => $this->assertFalse($other_recipe_children->contains($recipe)));
+
+        $other_recipe->childRecipes->each(fn($recipe) => $this->assertFalse($recipe_children->contains($recipe)));
+        $other_recipe->childRecipes->each(fn($recipe) => $this->assertTrue($other_recipe_children->contains($recipe)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_belongs_to_course(){
+        $course = Course::factory()->create();
+        $recipe = Recipe::factory()->create(['course_id' => $course->id]);
+        $this->assertNotNull($recipe->course);
+        $this->assertInstanceOf(Course::class, $recipe->course);
+        $this->assertEquals($recipe->course->id, $course->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_belongs_to_user(){
+        $user = User::factory()->create();
+        $recipe = Recipe::factory()->create(['user_id' => $user->id]);
+        $this->assertNotNull($recipe->user);
+        $this->assertInstanceOf(User::class, $recipe->user);
+        $this->assertEquals($recipe->user->id, $user->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_has_children_attribute(){
+        $recipe = Recipe::factory()->create();
+        $other_recipe = Recipe::factory()->create();
+
+        $recipe_children = Recipe::factory(5)->create(['parent_recipe_id' => $recipe->id]);
+
+        $this->assertNotEmpty($recipe->childRecipes);
+        $this->assertEmpty($other_recipe->childRecipes);
+
+        $this->assertCount(5, $recipe->childRecipes);
+
+        $this->assertTrue($recipe->hasChildren);
+        $this->assertFalse($other_recipe->hasChildren);
+    }
+
+    /**
+     * @test
+     */
+    public function test_is_children_attribute(){
+        $recipe = Recipe::factory()->create();
+        $other_recipe = Recipe::factory()->create();
+
+        $recipe_children = Recipe::factory(5)->create(['parent_recipe_id' => $recipe->id]);
+
+        $recipe_children->each(fn($child_recipe) => $this->assertTrue($child_recipe->isChild));
+        $this->assertFalse($other_recipe->isChild);
+        $this->assertFalse($recipe->isChild);
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_belongs_to_category(){
+        $category = Category::factory()->create();
+        $recipe = Recipe::factory()->create(['category_id' => $category->id]);
+        $this->assertNotNull($recipe->category);
+        $this->assertInstanceOf(Category::class, $recipe->category);
+        $this->assertEquals($recipe->category->id, $category->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_belongs_to_moderation_status(){
+        $moderation_status = ModerationStatus::factory()->create();
+        $recipe = Recipe::factory()->create(['moderation_status_id' => $moderation_status->id]);
+        $this->assertNotNull($recipe->moderationStatus);
+        $this->assertInstanceOf(ModerationStatus::class, $recipe->moderationStatus);
+        $this->assertEquals($recipe->moderationStatus->id, $moderation_status->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_belongs_to_visibility_status(){
+        $visibility_status = VisibilityStatus::factory()->create();
+        $recipe = Recipe::factory()->create(['visibility_status_id' => $visibility_status->id]);
+        $this->assertNotNull($recipe->visibilityStatus);
+        $this->assertInstanceOf(VisibilityStatus::class, $recipe->visibilityStatus);
+        $this->assertEquals($recipe->visibilityStatus->id, $visibility_status->id);
     }
 }

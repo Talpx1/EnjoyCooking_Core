@@ -20,4 +20,9 @@ class Course extends Model
             ]
         ];
     }
+
+    public function recipes()
+    {
+        return $this->hasMany(Recipe::class);
+    }
 }

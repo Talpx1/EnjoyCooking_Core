@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use App\Models\Recipe;
+use Illuminate\Database\Eloquent\Collection;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\Category;
@@ -137,5 +139,33 @@ class CategoryTest extends TestCase
         $child = Category::factory()->create(['parent_category_id' => $parent->id]);
         $this->assertFalse($child->is_parent_category);
         $this->assertTrue($parent->is_parent_category);
+    }
+
+    /**
+     * @test
+     */
+    public function test_category_has_many_recipes(){
+        $category = Category::factory()->create();
+        $other_category = Category::factory()->create();
+        $recipes = Recipe::factory(2)->create(['category_id' => $category->id]);
+        $other_recipes = Recipe::factory(4)->create(['category_id' => $other_category->id]);
+
+        $this->assertNotNull($category->recipes);
+        $this->assertNotNull($other_category->recipes);
+
+        $this->assertInstanceOf(Collection::class, $category->recipes);
+        $this->assertInstanceOf(Collection::class, $other_category->recipes);
+
+        $category->recipes->each(fn($recipe) => $this->assertInstanceOf(Recipe::class, $recipe));
+        $other_category->recipes->each(fn($recipe) => $this->assertInstanceOf(Recipe::class, $recipe));
+
+        $this->assertCount(2, $category->recipes);
+        $this->assertCount(4, $other_category->recipes);
+
+        $category->recipes->each(fn($recipe) => $this->assertTrue($recipes->contains($recipe)));
+        $category->recipes->each(fn($recipe) => $this->assertFalse($other_recipes->contains($recipe)));
+
+        $other_category->recipes->each(fn($recipe) => $this->assertTrue($other_recipes->contains($recipe)));
+        $other_category->recipes->each(fn($recipe) => $this->assertFalse($recipes->contains($recipe)));
     }
 }

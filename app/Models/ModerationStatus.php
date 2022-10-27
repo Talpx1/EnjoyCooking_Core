@@ -11,4 +11,9 @@ class ModerationStatus extends Model
     use HasFactory, HasRandomFactory;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
+
+    public function recipes()
+    {
+        return $this->hasMany(Recipe::class);
+    }
 }

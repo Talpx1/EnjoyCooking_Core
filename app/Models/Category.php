@@ -32,4 +32,9 @@ class Category extends Model
     public function getIsParentCategoryAttribute(){
         return is_null($this->parent_category_id);
     }
+
+    public function recipes()
+    {
+        return $this->hasMany(Recipe::class);
+    }
 }

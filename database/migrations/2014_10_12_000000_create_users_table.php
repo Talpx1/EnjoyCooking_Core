@@ -24,7 +24,8 @@ return new class extends Migration
             $table->string('username')->unique();
             $table->string('company_name')->nullable();
             $table->date('date_of_birth');
-            //TODO: add ig and website nullable
+            $table->string('instagram_url')->nullable();
+            $table->string('website_url')->nullable();
             $table->foreignIdFor(ProfessionGroup::class)->nullable()->constrained()->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(Gender::class)->nullable()->constrained()->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(UserType::class)->constrained()->restrictOnDelete()->cascadeOnUpdate();

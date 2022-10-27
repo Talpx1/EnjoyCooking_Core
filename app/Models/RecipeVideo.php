@@ -2,18 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasRandomFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Traits\HasRandomFactory;
 
-class VisibilityStatus extends Model
+class RecipeVideo extends Model
 {
     use HasFactory, HasRandomFactory;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
-    public function recipes()
+    public function recipe()
     {
-        return $this->hasMany(Recipe::class);
+        return $this->belongsTo(Recipe::class);
     }
 }
