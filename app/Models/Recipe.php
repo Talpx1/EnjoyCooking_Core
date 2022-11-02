@@ -64,4 +64,12 @@ class Recipe extends Model
     public function visibilityStatus(){
         return $this->belongsTo(VisibilityStatus::class);
     }
+
+    public function images(){
+        return $this->hasMany(RecipeImage::class);
+    }
+
+    public function steps(){
+        return $this->hasMany(RecipeStep::class);
+    }
 }

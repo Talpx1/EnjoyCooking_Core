@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use App\Models\RecipeImage;
+use App\Models\RecipeStep;
 use App\Models\RecipeVideo;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -635,5 +637,43 @@ class RecipeTest extends TestCase
         $this->assertNotNull($recipe->visibilityStatus);
         $this->assertInstanceOf(VisibilityStatus::class, $recipe->visibilityStatus);
         $this->assertEquals($recipe->visibilityStatus->id, $visibility_status->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_has_many_recipe_images(){
+        $recipe = Recipe::factory()->create(['title' => 'test']);
+        $recipe_images = RecipeImage::factory(2)->create(['recipe_id' => $recipe->id]);
+        $other_recipe_images = RecipeImage::factory(4)->create(['recipe_id'=>Recipe::factory()->create()->id]);
+
+        $this->assertNotNull($recipe->images);
+
+        $this->assertInstanceOf(Collection::class, $recipe->images);
+        $recipe->images->each(fn($image) => $this->assertInstanceOf(RecipeImage::class, $image));
+
+        $this->assertCount(2, $recipe->images);
+
+        $recipe->images->each(fn($image) => $this->assertTrue($recipe_images->contains($image)));
+        $recipe->images->each(fn($image) => $this->assertFalse($other_recipe_images->contains($image)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_has_many_recipe_steps(){
+        $recipe = Recipe::factory()->create(['title' => 'test']);
+        $recipe_steps = RecipeStep::factory(2)->create(['recipe_id' => $recipe->id]);
+        $other_recipe_steps = RecipeStep::factory(4)->create(['recipe_id'=>Recipe::factory()->create()->id]);
+
+        $this->assertNotNull($recipe->steps);
+
+        $this->assertInstanceOf(Collection::class, $recipe->steps);
+        $recipe->steps->each(fn($step) => $this->assertInstanceOf(RecipeStep::class, $step));
+
+        $this->assertCount(2, $recipe->steps);
+
+        $recipe->steps->each(fn($step) => $this->assertTrue($recipe_steps->contains($step)));
+        $recipe->steps->each(fn($step) => $this->assertFalse($other_recipe_steps->contains($step)));
     }
 }
