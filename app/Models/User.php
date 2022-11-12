@@ -73,4 +73,19 @@ class User extends Authenticatable {
     {
         return $this->hasMany(Recipe::class);
     }
+
+    public function ingredients()
+    {
+        return $this->hasMany(Ingredient::class);
+    }
+
+    public function ingredientImages()
+    {
+        return $this->hasMany(IngredientImage::class);
+    }
+
+    public function ingredientVideos()
+    {
+        return $this->hasMany(IngredientVideo::class);
+    }
 }

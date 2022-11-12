@@ -22,11 +22,6 @@ class BadgeUserTest extends TestCase
         BadgeUser::factory()->create(['user_id'=>null]);
     }
 
-    public function test_badge_type_is_required(){
-        $this->expectException(QueryException::class);
-        BadgeUser::factory()->create(['badge_type'=>null]);
-    }
-
     /**
      * @test
      */

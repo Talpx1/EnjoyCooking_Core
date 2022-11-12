@@ -16,17 +16,17 @@ class RecipeStepTest extends TestCase
      * @test
      */
     public function test_step_path_is_nullable(){
-        RecipeStep::factory()->create(['description' => 'test', 'step_path'=>null]);
-        $this->assertDatabaseHas('recipe_steps', ['description'=>'test', 'step_path'=>null]);
+        RecipeStep::factory()->create(['description' => 'test', 'image_path'=>null]);
+        $this->assertDatabaseHas('recipe_steps', ['description'=>'test', 'image_path'=>null]);
     }
 
     /**
      * @test
      */
     public function test_step_path_must_be_unique(){
-        RecipeStep::factory()->create(['step_path'=>'test']);
+        RecipeStep::factory()->create(['image_path'=>'test']);
         $this->expectException(QueryException::class);
-        RecipeStep::factory()->create(['step_path'=>'test']);
+        RecipeStep::factory()->create(['image_path'=>'test']);
     }
 
     /**
@@ -99,7 +99,7 @@ class RecipeStepTest extends TestCase
      */
     public function test_recipe_step_belongs_to_recipe(){
         $recipe = Recipe::factory()->create(['title' => 'test']);
-        $recipe_step = RecipeStep::factory()->create(['description' => 'test']);
+        $recipe_step = RecipeStep::factory()->create(['description' => 'test', 'recipe_id' => $recipe->id]);
         $this->assertNotNull($recipe_step->recipe);
         $this->assertInstanceOf(Recipe::class, $recipe_step->recipe);
         $this->assertEquals($recipe_step->recipe->id, $recipe->id);

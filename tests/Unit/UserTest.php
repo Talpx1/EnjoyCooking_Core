@@ -2,6 +2,9 @@
 
 namespace Tests\Unit;
 
+use App\Models\Ingredient;
+use App\Models\IngredientImage;
+use App\Models\IngredientVideo;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
@@ -270,6 +273,90 @@ class UserTest extends TestCase
 
         $other_user->recipes->each(fn($recipe) => $this->assertTrue($other_recipes->contains($recipe)));
         $other_user->recipes->each(fn($recipe) => $this->assertFalse($recipes->contains($recipe)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_user_has_many_ingredients(){
+        $user = User::factory()->create();
+        $other_user = User::factory()->create();
+        $ingredients = Ingredient::factory(2)->create(['user_id' => $user->id]);
+        $other_ingredients = Ingredient::factory(4)->create(['user_id' => $other_user->id]);
+
+        $this->assertNotNull($user->ingredients);
+        $this->assertNotNull($other_user->ingredients);
+
+        $this->assertInstanceOf(Collection::class, $user->ingredients);
+        $this->assertInstanceOf(Collection::class, $other_user->ingredients);
+
+        $user->ingredients->each(fn($ingredient) => $this->assertInstanceOf(Ingredient::class, $ingredient));
+        $other_user->ingredients->each(fn($ingredient) => $this->assertInstanceOf(Ingredient::class, $ingredient));
+
+        $this->assertCount(2, $user->ingredients);
+        $this->assertCount(4, $other_user->ingredients);
+
+        $user->ingredients->each(fn($ingredient) => $this->assertTrue($ingredients->contains($ingredient)));
+        $user->ingredients->each(fn($ingredient) => $this->assertFalse($other_ingredients->contains($ingredient)));
+
+        $other_user->ingredients->each(fn($ingredient) => $this->assertTrue($other_ingredients->contains($ingredient)));
+        $other_user->ingredients->each(fn($ingredient) => $this->assertFalse($ingredients->contains($ingredient)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_user_has_many_ingredient_images(){
+        $user = User::factory()->create();
+        $other_user = User::factory()->create();
+        $ingredient_images = IngredientImage::factory(2)->create(['user_id' => $user->id]);
+        $other_ingredient_images = IngredientImage::factory(4)->create(['user_id' => $other_user->id]);
+
+        $this->assertNotNull($user->ingredientImages);
+        $this->assertNotNull($other_user->ingredientImages);
+
+        $this->assertInstanceOf(Collection::class, $user->ingredientImages);
+        $this->assertInstanceOf(Collection::class, $other_user->ingredientImages);
+
+        $user->ingredientImages->each(fn($ingredient_image) => $this->assertInstanceOf(IngredientImage::class, $ingredient_image));
+        $other_user->ingredientImages->each(fn($ingredient_image) => $this->assertInstanceOf(IngredientImage::class, $ingredient_image));
+
+        $this->assertCount(2, $user->ingredientImages);
+        $this->assertCount(4, $other_user->ingredientImages);
+
+        $user->ingredientImages->each(fn($ingredient_image) => $this->assertTrue($ingredient_images->contains($ingredient_image)));
+        $user->ingredientImages->each(fn($ingredient_image) => $this->assertFalse($other_ingredient_images->contains($ingredient_image)));
+
+        $other_user->ingredientImages->each(fn($ingredient_image) => $this->assertTrue($other_ingredient_images->contains($ingredient_image)));
+        $other_user->ingredientImages->each(fn($ingredient_image) => $this->assertFalse($ingredient_images->contains($ingredient_image)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_user_has_many_ingredient_videos(){
+        $user = User::factory()->create();
+        $other_user = User::factory()->create();
+        $ingredient_videos = IngredientVideo::factory(2)->create(['user_id' => $user->id]);
+        $other_ingredient_videos = IngredientVideo::factory(4)->create(['user_id' => $other_user->id]);
+
+        $this->assertNotNull($user->ingredientVideos);
+        $this->assertNotNull($other_user->ingredientVideos);
+
+        $this->assertInstanceOf(Collection::class, $user->ingredientVideos);
+        $this->assertInstanceOf(Collection::class, $other_user->ingredientVideos);
+
+        $user->ingredientVideos->each(fn($ingredient_video) => $this->assertInstanceOf(IngredientVideo::class, $ingredient_video));
+        $other_user->ingredientVideos->each(fn($ingredient_video) => $this->assertInstanceOf(IngredientVideo::class, $ingredient_video));
+
+        $this->assertCount(2, $user->ingredientVideos);
+        $this->assertCount(4, $other_user->ingredientVideos);
+
+        $user->ingredientVideos->each(fn($ingredient_video) => $this->assertTrue($ingredient_videos->contains($ingredient_video)));
+        $user->ingredientVideos->each(fn($ingredient_video) => $this->assertFalse($other_ingredient_videos->contains($ingredient_video)));
+
+        $other_user->ingredientVideos->each(fn($ingredient_video) => $this->assertTrue($other_ingredient_videos->contains($ingredient_video)));
+        $other_user->ingredientVideos->each(fn($ingredient_video) => $this->assertFalse($ingredient_videos->contains($ingredient_video)));
     }
 }
 

@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use App\Models\Ingredient;
+use App\Models\IngredientRecipe;
 use App\Models\RecipeImage;
 use App\Models\RecipeStep;
 use App\Models\RecipeVideo;
@@ -18,7 +20,6 @@ use App\Models\User;
 use App\Models\Category;
 use App\Models\ModerationStatus;
 use App\Models\VisibilityStatus;
-use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Arr;
 
 class RecipeTest extends TestCase
@@ -231,8 +232,6 @@ class RecipeTest extends TestCase
 
         $this->assertNull($child_recipe->fresh()->parent_recipe_id);
         $this->assertDatabaseHas('recipes', ['title'=>'child', 'parent_recipe_id'=>null]);
-
-
     }
 
     /**
@@ -296,7 +295,7 @@ class RecipeTest extends TestCase
      * @test
      */
     public function test_user_id_must_exists_in_users_table(){
-        $user = Course::factory()->create();
+        $user = User::factory()->create();
         Recipe::factory()->create(['title' => 'test', 'user_id' => $user->id]);
         $this->assertDatabaseHas('recipes', ['title'=>'test', 'user_id'=>$user->id]);
 
@@ -675,5 +674,26 @@ class RecipeTest extends TestCase
 
         $recipe->steps->each(fn($step) => $this->assertTrue($recipe_steps->contains($step)));
         $recipe->steps->each(fn($step) => $this->assertFalse($other_recipe_steps->contains($step)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_belongs_to_many_ingredients(){
+        $recipe = Recipe::factory()->create();
+        $ingredients = Ingredient::factory(3)->create()->each(fn($ingredient)=>IngredientRecipe::factory()->create(['ingredient_id'=>$ingredient->id,'recipe_id'=>$recipe->id]));
+        $other_ingredients = Ingredient::factory(5)->create()->each(fn($ingredient)=>IngredientRecipe::factory()->create(['ingredient_id'=>$ingredient->id,'recipe_id'=>Recipe::factory()->create()->id]));
+
+        $ingredients->each(fn($ingredient) => $this->assertDatabaseHas('ingredient_recipe', ['ingredient_id'=>$ingredient->id,'recipe_id'=>$recipe->id]));
+        $other_ingredients->each(fn($ingredient) => $this->assertDatabaseHas('ingredient_recipe', ['ingredient_id'=>$ingredient->id]));
+        $other_ingredients->each(fn($ingredient) => $this->assertDatabaseMissing('ingredient_recipe', ['ingredient_id'=>$ingredient->id, 'recipe_id'=>$recipe->id]));
+
+        $this->assertNotNull($recipe->ingredients);
+        $this->assertInstanceOf(Collection::class, $recipe->ingredients);
+        $this->assertCount(3, $recipe->ingredients);
+        $recipe->ingredients->each(fn($ingredient)=>$this->assertInstanceOf(Ingredient::class, $ingredient));
+
+        $recipe->ingredients->each(fn($ingredient)=>$this->assertTrue($ingredients->contains($ingredient)));
+        $recipe->ingredients->each(fn($ingredient)=>$this->assertFalse($other_ingredients->contains($ingredient)));
     }
 }
