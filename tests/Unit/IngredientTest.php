@@ -27,6 +27,15 @@ class IngredientTest extends TestCase{
     /**
      * @test
      */
+    public function test_name_must_be_unique(){
+        Ingredient::factory()->create(['name'=>'test']);
+        $this->expectException(QueryException::class);
+        Ingredient::factory()->create(['name'=>'test']);
+    }
+
+    /**
+     * @test
+     */
     public function test_slug_is_generated_from_name(){
         $ingredient = Ingredient::factory()->create(['name'=>'test 123']);
         $this->assertModelExists($ingredient);
