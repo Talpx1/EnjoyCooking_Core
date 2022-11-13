@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use App\Models\User;
 use App\Enums\Roles;
@@ -24,5 +25,10 @@ abstract class TestCase extends BaseTestCase
 
     public function actingAsUser(){
         $this->actingAs(User::factory()->create()->assignRole(Roles::USER->value));
+    }
+
+    public function assertUniqueConstraintFails(QueryException $e){
+        $this->assertEquals(23000, $e->getCode());
+        $this->assertStringContainsString('UNIQUE constraint failed', $e->getMessage());
     }
 }

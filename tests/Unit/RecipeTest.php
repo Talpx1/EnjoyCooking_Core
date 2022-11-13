@@ -7,6 +7,8 @@ use App\Models\IngredientRecipe;
 use App\Models\RecipeImage;
 use App\Models\RecipeStep;
 use App\Models\RecipeVideo;
+use App\Models\Tag;
+use App\Models\Taggable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Str;
@@ -695,5 +697,24 @@ class RecipeTest extends TestCase
 
         $recipe->ingredients->each(fn($ingredient)=>$this->assertTrue($ingredients->contains($ingredient)));
         $recipe->ingredients->each(fn($ingredient)=>$this->assertFalse($other_ingredients->contains($ingredient)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_recipe_gets_deleted_its_related_records_in_taggables_table_get_deleted(){
+        $recipe = Recipe::factory()->create();
+        $tags = Tag::factory(3)->create()->each(function($tag) use ($recipe){
+            Taggable::factory()->create(['tag_id'=>$tag->id, 'taggable_id'=>$recipe->id, 'taggable_type'=>$recipe::class]);
+            $this->assertDatabaseHas('taggables', ['tag_id'=>$tag->id, 'taggable_id'=>$recipe->id, 'taggable_type'=>$recipe::class]);
+        });
+
+        $recipe->delete();
+        $this->assertModelMissing($recipe);
+        $this->assertDatabaseMissing('recipes', ['title'=>$recipe->id]);
+
+        $tags->each(function($tag) use ($recipe){
+            $this->assertDatabaseMissing('taggables', ['tag_id'=>$tag->id, 'taggable_id'=>$recipe->id, 'taggable_type'=>$recipe::class]);
+        });
     }
 }

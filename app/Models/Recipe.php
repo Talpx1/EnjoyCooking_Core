@@ -76,4 +76,14 @@ class Recipe extends Model
     public function ingredients(){
         return $this->belongsToMany(Ingredient::class);
     }
+
+    public function tags(){
+        return $this->morphToMany(Tag::class, 'taggable');
+    }
+
+    protected static function booted(){
+        static::deleting(function ($recipe) {
+            Taggable::where([['taggable_id', '=', $recipe->id],['taggable_type', '=', Recipe::class]])->delete();
+        });
+    }
 }

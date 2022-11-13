@@ -38,4 +38,14 @@ class Ingredient extends Model
     public function recipes(){
         return $this->belongsToMany(Recipe::class);
     }
+
+    public function tags(){
+        return $this->morphToMany(Tag::class, 'taggable');
+    }
+
+    protected static function booted(){
+        static::deleting(function ($ingredient) {
+            Taggable::where([['taggable_id', '=', $ingredient->id],['taggable_type', '=', Ingredient::class]])->delete();
+        });
+    }
 }

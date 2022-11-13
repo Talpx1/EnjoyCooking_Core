@@ -19,10 +19,10 @@ class RepostFactory extends Factory
      */
     public function definition()
     {
-        $post = Arr::random([Category::class, User::class]);
+        $model = Arr::random([Category::class, User::class]);
         return [
-            'repostable_id' => $post::getRandomOrCreate()->id,
-            'repostable_type' => $post,
+            'repostable_id' => $model::getRandomOrCreate()->id,
+            'repostable_type' => $model,
             'user_id' => User::getRandomOrCreate()->id,
         ];
     }

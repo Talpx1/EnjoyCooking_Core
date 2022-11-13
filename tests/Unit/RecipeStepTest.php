@@ -122,10 +122,12 @@ class RecipeStepTest extends TestCase
         RecipeStep::factory()->create(['description'=>'test', 'recipe_id'=>$recipe2->id]);
         $this->assertDatabaseHas('recipe_steps', ['recipe_id' => $recipe2->id,'description' => 'test']);
 
-        $this->expectException(QueryException::class);
-        RecipeStep::factory()->create(['description'=>'test', 'recipe_id'=>$recipe->id]);
+        try{
+            RecipeStep::factory()->create(['description'=>'test', 'recipe_id'=>$recipe->id]);
+        }catch(QueryException $e){$this->assertUniqueConstraintFails($e);}
 
-        $this->expectException(QueryException::class);
-        RecipeStep::factory()->create(['description'=>'test', 'recipe_id'=>$recipe2->id]);
+        try{
+            RecipeStep::factory()->create(['description'=>'test', 'recipe_id'=>$recipe2->id]);
+        }catch(QueryException $e){$this->assertUniqueConstraintFails($e);}
     }
 }
