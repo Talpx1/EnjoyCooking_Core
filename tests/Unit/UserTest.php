@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Models\Ingredient;
 use App\Models\IngredientImage;
 use App\Models\IngredientVideo;
+use App\Models\Snack;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
@@ -357,6 +358,34 @@ class UserTest extends TestCase
 
         $other_user->ingredientVideos->each(fn($ingredient_video) => $this->assertTrue($other_ingredient_videos->contains($ingredient_video)));
         $other_user->ingredientVideos->each(fn($ingredient_video) => $this->assertFalse($ingredient_videos->contains($ingredient_video)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_user_has_many_snacks(){
+        $user = User::factory()->create();
+        $other_user = User::factory()->create();
+        $snacks = Snack::factory(2)->create(['user_id' => $user->id]);
+        $other_snacks = Snack::factory(4)->create(['user_id' => $other_user->id]);
+
+        $this->assertNotNull($user->snacks);
+        $this->assertNotNull($other_user->snacks);
+
+        $this->assertInstanceOf(Collection::class, $user->snacks);
+        $this->assertInstanceOf(Collection::class, $other_user->snacks);
+
+        $user->snacks->each(fn($snack) => $this->assertInstanceOf(Snack::class, $snack));
+        $other_user->snacks->each(fn($snack) => $this->assertInstanceOf(Snack::class, $snack));
+
+        $this->assertCount(2, $user->snacks);
+        $this->assertCount(4, $other_user->snacks);
+
+        $user->snacks->each(fn($snack) => $this->assertTrue($snacks->contains($snack)));
+        $user->snacks->each(fn($snack) => $this->assertFalse($other_snacks->contains($snack)));
+
+        $other_user->snacks->each(fn($snack) => $this->assertTrue($other_snacks->contains($snack)));
+        $other_user->snacks->each(fn($snack) => $this->assertFalse($snacks->contains($snack)));
     }
 }
 

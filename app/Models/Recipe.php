@@ -86,4 +86,12 @@ class Recipe extends Model
             Taggable::where([['taggable_id', '=', $recipe->id],['taggable_type', '=', Recipe::class]])->delete();
         });
     }
+
+    public function comments(){
+        return $this->morphMany(Comment::class, 'commentable');
+    }
+
+    public function snacks(){
+        return $this->hasMany(Snack::class);
+    }
 }

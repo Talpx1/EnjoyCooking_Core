@@ -23,9 +23,20 @@ class RepostTest extends TestCase
         Repost::factory()->create(['repostable_id'=>null]);
     }
 
+    /**
+     * @test
+     */
     public function test_repostable_type_is_required(){
         $this->expectException(QueryException::class);
         Repost::factory()->create(['repostable_type'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_user_id_is_required(){
+        $this->expectException(QueryException::class);
+        Repost::factory()->create(['user_id'=>null]);
     }
 
     /**

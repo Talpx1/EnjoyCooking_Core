@@ -88,4 +88,9 @@ class User extends Authenticatable {
     {
         return $this->hasMany(IngredientVideo::class);
     }
+
+    public function snacks()
+    {
+        return $this->hasMany(Snack::class);
+    }
 }

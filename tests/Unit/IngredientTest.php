@@ -224,7 +224,7 @@ class IngredientTest extends TestCase{
      * @test
      */
     public function test_when_ingredient_gets_deleted_its_related_records_in_taggables_table_get_deleted(){
-        $ingredient = Recipe::factory()->create();
+        $ingredient = Ingredient::factory()->create();
         $tags = Tag::factory(3)->create()->each(function($tag) use ($ingredient){
             Taggable::factory()->create(['tag_id'=>$tag->id, 'taggable_id'=>$ingredient->id, 'taggable_type'=>$ingredient::class]);
             $this->assertDatabaseHas('taggables', ['tag_id'=>$tag->id, 'taggable_id'=>$ingredient->id, 'taggable_type'=>$ingredient::class]);

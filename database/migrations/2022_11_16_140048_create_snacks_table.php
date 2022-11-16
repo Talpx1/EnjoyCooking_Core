@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Ingredient;
 use App\Models\Recipe;
+use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -15,13 +15,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('ingredient_recipe', function (Blueprint $table) {
+        Schema::create('snacks', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(Recipe::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignIdFor(Ingredient::class)->constrained()->cascadeOnUpdate()->restrictOnDelete();
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->string('video_path')->unique();
+            $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignIdFor(Recipe::class)->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
             $table->timestamps();
-
-            $table->unique(['recipe_id', 'ingredient_id']);
         });
     }
 
@@ -32,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ingredient_recipe');
+        Schema::dropIfExists('snacks');
     }
 };

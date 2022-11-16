@@ -2,11 +2,13 @@
 
 namespace Tests\Unit;
 
+use App\Models\Comment;
 use App\Models\Ingredient;
 use App\Models\IngredientRecipe;
 use App\Models\RecipeImage;
 use App\Models\RecipeStep;
 use App\Models\RecipeVideo;
+use App\Models\Snack;
 use App\Models\Tag;
 use App\Models\Taggable;
 use Illuminate\Database\Eloquent\Collection;
@@ -716,5 +718,65 @@ class RecipeTest extends TestCase
         $tags->each(function($tag) use ($recipe){
             $this->assertDatabaseMissing('taggables', ['tag_id'=>$tag->id, 'taggable_id'=>$recipe->id, 'taggable_type'=>$recipe::class]);
         });
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_morphs_to_many_tags(){
+        $recipe = Recipe::factory()->create(['title' => 'test']);
+        $recipe_tags = Tag::factory(2)->create()->each(fn($tag) => Taggable::factory()->create(['taggable_id' => $recipe->id, 'tag_id' => $tag->id, 'taggable_type' => $recipe::class]));
+        $other_recipe_tags = Tag::factory(4)->create()->each(fn($tag) => Taggable::factory()->create(['taggable_id' => Recipe::factory()->create()->id, 'tag_id' => $tag->id, 'taggable_type' => $recipe::class]));
+
+        $this->assertNotNull($recipe->tags);
+
+        $this->assertInstanceOf(Collection::class, $recipe->tags);
+        $recipe->tags->each(fn($tag) => $this->assertInstanceOf(Tag::class, $tag));
+
+        $this->assertCount(2, $recipe->tags);
+
+        $recipe->tags->each(fn($tag) => $this->assertTrue($recipe_tags->contains($tag)));
+        $recipe->tags->each(fn($tag) => $this->assertFalse($other_recipe_tags->contains($tag)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_morphs_many_comments(){
+        $recipe = Recipe::factory()->create(['title' => 'test']);
+        $recipe_comments = Comment::factory(2)->create(['commentable_id' => $recipe->id, 'commentable_type' => $recipe::class]);
+        $other_recipe_comments = Comment::factory(4)->create(['commentable_id'=>Recipe::factory()->create()->id, 'commentable_type' => $recipe::class]);
+
+        $this->assertNotNull($recipe->comments);
+
+        $this->assertInstanceOf(Collection::class, $recipe->comments);
+        $recipe->comments->each(fn($comment) => $this->assertInstanceOf(Comment::class, $comment));
+
+        $this->assertCount(2, $recipe->comments);
+
+        $recipe->comments->each(fn($comment) => $this->assertTrue($recipe_comments->contains($comment)));
+        $recipe->comments->each(fn($comment) => $this->assertFalse($other_recipe_comments->contains($comment)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_has_many_snacks(){
+        $recipe = Recipe::factory()->create(['title' => 'test']);
+        $recipe2 = Recipe::factory()->create(['title' => 'test2']);
+        $recipe_snacks = Snack::factory(2)->create(['recipe_id' => $recipe->id]);
+        $other_recipe_snacks = Snack::factory(4)->create(['recipe_id'=>Recipe::factory()->create()->id]);
+
+        $this->assertNotNull($recipe->snacks);
+        $this->assertNotEmpty($recipe->snacks);
+        $this->assertEmpty($recipe2->snacks);
+
+        $this->assertInstanceOf(Collection::class, $recipe->snacks);
+        $recipe->snacks->each(fn($snack) => $this->assertInstanceOf(Snack::class, $snack));
+
+        $this->assertCount(2, $recipe->snacks);
+
+        $recipe->snacks->each(fn($snack) => $this->assertTrue($recipe_snacks->contains($snack)));
+        $recipe->snacks->each(fn($snack) => $this->assertFalse($other_recipe_snacks->contains($snack)));
     }
 }

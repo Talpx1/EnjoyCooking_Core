@@ -59,8 +59,6 @@ class TaggableTest extends TestCase{
      * @test
      */
     public function test_combination_of_tag_id_taggable_id_and_taggable_type_must_be_unique(){
-        $this->withExceptionHandling();
-
         $tag = Tag::factory()->create();
         $tag2=Tag::factory()->create();
         $recipe = Recipe::factory()->create();
