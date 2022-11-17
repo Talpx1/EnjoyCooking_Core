@@ -27,5 +27,6 @@ class DatabaseSeeder extends Seeder {
 
         $this->call(CourseSeeder::class);
         $this->call(DifficultyLevelSeeder::class);
+        $this->call(MeasureUnitSeeder::class);
     }
 }

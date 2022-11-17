@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Ingredient;
+use App\Models\MeasureUnit;
 use App\Models\Recipe;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -21,6 +22,8 @@ class IngredientRecipeFactory extends Factory
         return [
             'recipe_id' => Recipe::getRandomOrCreate()->id,
             'ingredient_id' => Ingredient::getRandomOrCreate()->id,
+            'measure_unit_id' => MeasureUnit::getRandomOrCreate()->id,
+            'quantity' => rand(1,100),
         ];
     }
 }

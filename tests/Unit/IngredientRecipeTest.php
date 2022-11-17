@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\Ingredient;
 use App\Models\IngredientRecipe;
+use App\Models\MeasureUnit;
 use App\Models\Recipe;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -112,5 +113,36 @@ class IngredientRecipeTest extends TestCase
 
         $this->expectException(QueryException::class);
         IngredientRecipe::factory()->create(['ingredient_id' => $ingredient->id, 'recipe_id' => $recipe->id]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_quantity_is_nullable(){
+        IngredientRecipe::factory()->create(['quantity'=>null]);
+        $this->assertDatabaseCount(IngredientRecipe::class, 1);
+        $this->assertDatabaseHas(IngredientRecipe::class, ['quantity'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_measure_unit_id_is_nullable(){
+        IngredientRecipe::factory()->create(['measure_unit_id'=>null]);
+        $this->assertDatabaseCount(IngredientRecipe::class, 1);
+        $this->assertDatabaseHas(IngredientRecipe::class, ['measure_unit_id'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_measure_unit_id_must_exists_in_measure_units_table(){
+        $measure_unit = MeasureUnit::factory()->create();
+        IngredientRecipe::factory()->create(['measure_unit_id' => $measure_unit->id]);
+        $this->assertDatabaseHas('ingredient_recipe', ['measure_unit_id'=>$measure_unit->id]);
+
+        $this->expectException(QueryException::class);
+        IngredientRecipe::factory()->create(['measure_unit_id' => 111]);
+        $this->assertDatabaseMissing('ingredient_recipe', ['measure_unit_id'=>111]);
     }
 }
