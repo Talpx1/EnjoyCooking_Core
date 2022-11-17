@@ -94,4 +94,8 @@ class Recipe extends Model
     public function snacks(){
         return $this->hasMany(Snack::class);
     }
+
+    public function ratings(){
+        return $this->morphMany(Rating::class, 'rateable');
+    }
 }

@@ -93,4 +93,9 @@ class User extends Authenticatable {
     {
         return $this->hasMany(Snack::class);
     }
+
+    public function ratings()
+    {
+        return $this->hasMany(Rating::class);
+    }
 }

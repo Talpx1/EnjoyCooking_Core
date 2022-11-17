@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Models\Ingredient;
 use App\Models\IngredientImage;
 use App\Models\IngredientVideo;
+use App\Models\Rating;
 use App\Models\Snack;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -386,6 +387,42 @@ class UserTest extends TestCase
 
         $other_user->snacks->each(fn($snack) => $this->assertTrue($other_snacks->contains($snack)));
         $other_user->snacks->each(fn($snack) => $this->assertFalse($snacks->contains($snack)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_user_has_many_ratings(){
+        $user = User::factory()->create();
+        $other_user = User::factory()->create();
+        $ratings = collect([
+            Rating::factory()->create(['rateable_id'=>Recipe::factory()->create()->id, 'rateable_type'=>Recipe::class, 'user_id' => $user->id]),
+            Rating::factory()->create(['rateable_id'=>Recipe::factory()->create()->id, 'rateable_type'=>Recipe::class, 'user_id' => $user->id])
+        ]);
+        $other_ratings = collect([
+            Rating::factory()->create(['rateable_id'=>Recipe::factory()->create()->id, 'rateable_type'=>Recipe::class, 'user_id' => $other_user->id]),
+            Rating::factory()->create(['rateable_id'=>Recipe::factory()->create()->id, 'rateable_type'=>Recipe::class, 'user_id' => $other_user->id]),
+            Rating::factory()->create(['rateable_id'=>Recipe::factory()->create()->id, 'rateable_type'=>Recipe::class, 'user_id' => $other_user->id]),
+            Rating::factory()->create(['rateable_id'=>Recipe::factory()->create()->id, 'rateable_type'=>Recipe::class, 'user_id' => $other_user->id])
+        ]);
+
+        $this->assertNotNull($user->ratings);
+        $this->assertNotNull($other_user->ratings);
+
+        $this->assertInstanceOf(Collection::class, $user->ratings);
+        $this->assertInstanceOf(Collection::class, $other_user->ratings);
+
+        $user->ratings->each(fn($rating) => $this->assertInstanceOf(Rating::class, $rating));
+        $other_user->ratings->each(fn($rating) => $this->assertInstanceOf(Rating::class, $rating));
+
+        $this->assertCount(2, $user->ratings);
+        $this->assertCount(4, $other_user->ratings);
+
+        $ratings->each(fn($rating) => $this->assertTrue($user->ratings->contains($rating)));
+        $ratings->each(fn($rating) => $this->assertFalse($other_user->ratings->contains($rating)));
+
+        $other_ratings->each(fn($rating) => $this->assertTrue($other_user->ratings->contains($rating)));
+        $other_ratings->each(fn($rating) => $this->assertFalse($user->ratings->contains($rating)));
     }
 }
 

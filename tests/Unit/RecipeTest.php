@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Models\Comment;
 use App\Models\Ingredient;
 use App\Models\IngredientRecipe;
+use App\Models\Rating;
 use App\Models\RecipeImage;
 use App\Models\RecipeStep;
 use App\Models\RecipeVideo;
@@ -778,5 +779,32 @@ class RecipeTest extends TestCase
 
         $recipe->snacks->each(fn($snack) => $this->assertTrue($recipe_snacks->contains($snack)));
         $recipe->snacks->each(fn($snack) => $this->assertFalse($other_recipe_snacks->contains($snack)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_morphs_many_ratings(){
+        $recipe = Recipe::factory()->create(['title' => 'test']);
+        $recipe_ratings = collect([
+            Rating::factory()->create(['rateable_id'=>$recipe->id, 'rateable_type'=>Recipe::class, 'user_id' => User::factory()->create()->id]),
+            Rating::factory()->create(['rateable_id'=>$recipe->id, 'rateable_type'=>Recipe::class, 'user_id' => User::factory()->create()->id])
+        ]);
+        $other_recipe_ratings = collect([
+            Rating::factory()->create(['rateable_id'=>Recipe::factory()->create()->id, 'rateable_type'=>Recipe::class, 'user_id' => User::factory()->create()->id]),
+            Rating::factory()->create(['rateable_id'=>Recipe::factory()->create()->id, 'rateable_type'=>Recipe::class, 'user_id' => User::factory()->create()->id]),
+            Rating::factory()->create(['rateable_id'=>Recipe::factory()->create()->id, 'rateable_type'=>Recipe::class, 'user_id' => User::factory()->create()->id]),
+            Rating::factory()->create(['rateable_id'=>Recipe::factory()->create()->id, 'rateable_type'=>Recipe::class, 'user_id' => User::factory()->create()->id])
+        ]);
+
+        $this->assertNotNull($recipe->ratings);
+
+        $this->assertInstanceOf(Collection::class, $recipe->ratings);
+        $recipe->ratings->each(fn($rating) => $this->assertInstanceOf(Rating::class, $rating));
+
+        $this->assertCount(2, $recipe->ratings);
+
+        $recipe_ratings->each(fn($rating) => $this->assertTrue($recipe->ratings->contains($rating)));
+        $other_recipe_ratings->each(fn($rating) => $this->assertFalse($recipe->ratings->contains($rating)));
     }
 }

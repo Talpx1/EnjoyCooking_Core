@@ -17,7 +17,7 @@ class BadgeFactory extends Factory
     public function definition()
     {
         return [
-            'title' => $this->faker->unique()->words(asText:true),
+            'title' => $this->faker->unique()->words(rand(1, 5), true),
             'description' => $this->faker->words(8, true)
         ];
     }
