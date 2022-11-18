@@ -29,4 +29,8 @@ class Tag extends Model
         return $this->morphedByMany(Recipe::class, 'taggable');
     }
 
+    public function snacks(){
+        return $this->morphedByMany(Snack::class, 'taggable');
+    }
+
 }

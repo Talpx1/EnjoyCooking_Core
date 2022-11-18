@@ -3,17 +3,18 @@
 namespace App\Models;
 
 use App\Models\Traits\HasRandomFactory;
+use App\Models\Traits\MorphCleaningOnDelete;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Ingredient extends Model
 {
-    use HasFactory;
-
-    use HasFactory, HasRandomFactory, Sluggable;
+    use HasFactory, HasRandomFactory, Sluggable, MorphCleaningOnDelete;
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'slug'];
+
+    private static $morphs = [Taggable::class];
 
     public function sluggable(): array{
         return [
@@ -41,11 +42,5 @@ class Ingredient extends Model
 
     public function tags(){
         return $this->morphToMany(Tag::class, 'taggable');
-    }
-
-    protected static function booted(){
-        static::deleting(function ($ingredient) {
-            Taggable::where([['taggable_id', '=', $ingredient->id],['taggable_type', '=', Ingredient::class]])->delete();
-        });
     }
 }

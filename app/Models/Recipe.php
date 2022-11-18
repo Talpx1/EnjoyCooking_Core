@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\MorphCleaningOnDelete;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\HasRandomFactory;
@@ -9,9 +10,11 @@ use Cviebrock\EloquentSluggable\Sluggable;
 
 class Recipe extends Model
 {
-    use HasFactory, HasRandomFactory, Sluggable;
+    use HasFactory, HasRandomFactory, Sluggable, MorphCleaningOnDelete;
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'slug'];
+
+    private static $morphs = [Taggable::class, Awardable::class, Repost::class, Comment::class, Rating::class];
 
     public function sluggable(): array{
         return [
@@ -81,12 +84,6 @@ class Recipe extends Model
         return $this->morphToMany(Tag::class, 'taggable');
     }
 
-    protected static function booted(){
-        static::deleting(function ($recipe) {
-            Taggable::where([['taggable_id', '=', $recipe->id],['taggable_type', '=', Recipe::class]])->delete();
-        });
-    }
-
     public function comments(){
         return $this->morphMany(Comment::class, 'commentable');
     }
@@ -97,5 +94,9 @@ class Recipe extends Model
 
     public function ratings(){
         return $this->morphMany(Rating::class, 'rateable');
+    }
+
+    public function awards(){
+        return $this->morphToMany(Award::class, 'awardable');
     }
 }

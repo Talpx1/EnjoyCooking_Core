@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use App\Models\Award;
+use App\Models\Awardable;
 use App\Models\Comment;
 use App\Models\Ingredient;
 use App\Models\IngredientRecipe;
@@ -9,6 +11,7 @@ use App\Models\Rating;
 use App\Models\RecipeImage;
 use App\Models\RecipeStep;
 use App\Models\RecipeVideo;
+use App\Models\Repost;
 use App\Models\Snack;
 use App\Models\Tag;
 use App\Models\Taggable;
@@ -806,5 +809,100 @@ class RecipeTest extends TestCase
 
         $recipe_ratings->each(fn($rating) => $this->assertTrue($recipe->ratings->contains($rating)));
         $other_recipe_ratings->each(fn($rating) => $this->assertFalse($recipe->ratings->contains($rating)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_morphs_to_many_awards(){
+        $recipe = Recipe::factory()->create(['title' => 'test']);
+        $recipe_awards = Award::factory(2)->create()->each(fn($award) => Awardable::factory()->create(['awardable_id' => $recipe->id, 'award_id' => $award->id, 'awardable_type' => $recipe::class]));
+        $other_recipe_awards = Award::factory(4)->create()->each(fn($award) => Awardable::factory()->create(['awardable_id' => Recipe::factory()->create()->id, 'award_id' => $award->id, 'awardable_type' => $recipe::class]));
+
+        $this->assertNotNull($recipe->awards);
+
+        $this->assertInstanceOf(Collection::class, $recipe->awards);
+        $recipe->awards->each(fn($award) => $this->assertInstanceOf(Award::class, $award));
+
+        $this->assertCount(2, $recipe->awards);
+
+        $recipe->awards->each(fn($award) => $this->assertTrue($recipe_awards->contains($award)));
+        $recipe->awards->each(fn($award) => $this->assertFalse($other_recipe_awards->contains($award)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_recipe_gets_deleted_its_related_records_in_awardables_table_get_deleted(){
+        $recipe = Recipe::factory()->create();
+        $awards = Award::factory(3)->create()->each(function($award) use ($recipe){
+            Awardable::factory()->create(['award_id'=>$award->id, 'awardable_id'=>$recipe->id, 'awardable_type'=>$recipe::class]);
+            $this->assertDatabaseHas('awardables', ['award_id'=>$award->id, 'awardable_id'=>$recipe->id, 'awardable_type'=>$recipe::class]);
+        });
+
+        $recipe->delete();
+        $this->assertModelMissing($recipe);
+        $this->assertDatabaseMissing('recipes', ['title'=>$recipe->id]);
+
+        $awards->each(function($award) use ($recipe){
+            $this->assertDatabaseMissing('awardables', ['award_id'=>$award->id, 'awardable_id'=>$recipe->id, 'awardable_type'=>$recipe::class]);
+        });
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_recipe_gets_deleted_its_related_records_in_reposts_table_get_deleted(){
+        $recipe = Recipe::factory()->create();
+        $reposts = collect([
+            Repost::factory()->create(['repostable_id'=>$recipe->id, 'repostable_type'=>$recipe::class, 'user_id'=>User::factory()->create()->id]),
+            Repost::factory()->create(['repostable_id'=>$recipe->id, 'repostable_type'=>$recipe::class, 'user_id'=>User::factory()->create()->id]),
+            Repost::factory()->create(['repostable_id'=>$recipe->id, 'repostable_type'=>$recipe::class, 'user_id'=>User::factory()->create()->id]),
+        ]);
+
+
+        $recipe->delete();
+        $this->assertModelMissing($recipe);
+        $this->assertDatabaseMissing('recipes', ['title'=>$recipe->id]);
+
+        $reposts->each(function($repost) use ($recipe){
+            $this->assertDatabaseMissing('reposts', ['repostable_id'=>$recipe->id, 'repostable_type'=>$recipe::class]);
+        });
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_recipe_gets_deleted_its_related_records_in_comments_table_get_deleted(){
+        $recipe = Recipe::factory()->create();
+        $comments = Comment::factory(3)->create(['commentable_id'=>$recipe->id, 'commentable_type'=>$recipe::class]);
+
+        $recipe->delete();
+        $this->assertModelMissing($recipe);
+        $this->assertDatabaseMissing('recipes', ['title'=>$recipe->id]);
+
+        $comments->each(function($tag) use ($recipe){
+            $this->assertDatabaseMissing('comments', ['tag_id'=>$tag->id, 'commentable_id'=>$recipe->id, 'commentable_type'=>$recipe::class]);
+        });
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_recipe_gets_deleted_its_related_records_in_ratings_table_get_deleted(){
+        $recipe = Recipe::factory()->create();
+        $ratings = collect([
+            Rating::factory()->create(['rateable_id'=>$recipe->id, 'rateable_type'=>$recipe::class, 'user_id'=>User::factory()->create()->id]),
+            Rating::factory()->create(['rateable_id'=>$recipe->id, 'rateable_type'=>$recipe::class, 'user_id'=>User::factory()->create()->id]),
+            Rating::factory()->create(['rateable_id'=>$recipe->id, 'rateable_type'=>$recipe::class, 'user_id'=>User::factory()->create()->id]),
+        ]);
+
+        $recipe->delete();
+        $this->assertModelMissing($recipe);
+        $this->assertDatabaseMissing('recipes', ['title'=>$recipe->id]);
+
+        $ratings->each(function($tag) use ($recipe){
+            $this->assertDatabaseMissing('ratings', ['tag_id'=>$tag->id, 'rateable_id'=>$recipe->id, 'rateable_type'=>$recipe::class]);
+        });
     }
 }

@@ -98,4 +98,8 @@ class User extends Authenticatable {
     {
         return $this->hasMany(Rating::class);
     }
+
+    public function tags(){
+        return $this->morphToMany(Award::class, 'awardable');
+    }
 }

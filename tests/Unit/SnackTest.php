@@ -2,9 +2,13 @@
 
 namespace Tests\Unit;
 
+use App\Models\Comment;
 use App\Models\Recipe;
 use App\Models\Snack;
+use App\Models\Tag;
+use App\Models\Taggable;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -126,5 +130,78 @@ class SnackTest extends TestCase{
 
         $this->assertNull($snack->fresh()->recipe_id);
         $this->assertDatabaseHas('snacks', ['title'=>'snack_test', 'recipe_id'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_snack_gets_deleted_its_related_records_in_taggables_table_get_deleted(){
+        $snack = Snack::factory()->create();
+        $tags = Tag::factory(3)->create()->each(function($tag) use ($snack){
+            Taggable::factory()->create(['tag_id'=>$tag->id, 'taggable_id'=>$snack->id, 'taggable_type'=>$snack::class]);
+            $this->assertDatabaseHas('taggables', ['tag_id'=>$tag->id, 'taggable_id'=>$snack->id, 'taggable_type'=>$snack::class]);
+        });
+
+        $snack->delete();
+        $this->assertModelMissing($snack);
+        $this->assertDatabaseMissing('snacks', ['title'=>$snack->id]);
+
+        $tags->each(function($tag) use ($snack){
+            $this->assertDatabaseMissing('taggables', ['tag_id'=>$tag->id, 'taggable_id'=>$snack->id, 'taggable_type'=>$snack::class]);
+        });
+    }
+
+    /**
+     * @test
+     */
+    public function test_snack_morphs_to_many_tags(){
+        $snack = Snack::factory()->create(['title' => 'test']);
+        $snack_tags = Tag::factory(2)->create()->each(fn($tag) => Taggable::factory()->create(['taggable_id' => $snack->id, 'tag_id' => $tag->id, 'taggable_type' => $snack::class]));
+        $other_snack_tags = Tag::factory(4)->create()->each(fn($tag) => Taggable::factory()->create(['taggable_id' => Snack::factory()->create()->id, 'tag_id' => $tag->id, 'taggable_type' => $snack::class]));
+
+        $this->assertNotNull($snack->tags);
+
+        $this->assertInstanceOf(Collection::class, $snack->tags);
+        $snack->tags->each(fn($tag) => $this->assertInstanceOf(Tag::class, $tag));
+
+        $this->assertCount(2, $snack->tags);
+
+        $snack->tags->each(fn($tag) => $this->assertTrue($snack_tags->contains($tag)));
+        $snack->tags->each(fn($tag) => $this->assertFalse($other_snack_tags->contains($tag)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_snack_gets_deleted_its_related_records_in_comments_table_get_deleted(){
+        $snack = Snack::factory()->create();
+        $comments = Comment::factory(3)->create(['commentable_id'=>$snack->id, 'commentable_type'=>$snack::class]);
+
+        $snack->delete();
+        $this->assertModelMissing($snack);
+        $this->assertDatabaseMissing('snacks', ['title'=>$snack->id]);
+
+        $comments->each(function($tag) use ($snack){
+            $this->assertDatabaseMissing('comments', ['tag_id'=>$tag->id, 'commentable_id'=>$snack->id, 'commentable_type'=>$snack::class]);
+        });
+    }
+
+    /**
+     * @test
+     */
+    public function test_snack_morphs_many_comments(){
+        $snack = Snack::factory()->create(['title' => 'test']);
+        $snack_comments = Comment::factory(2)->create(['commentable_id' => $snack->id, 'commentable_type' => $snack::class]);
+        $other_snack_comments = Comment::factory(4)->create(['commentable_id'=>Snack::factory()->create()->id, 'commentable_type' => $snack::class]);
+
+        $this->assertNotNull($snack->comments);
+
+        $this->assertInstanceOf(Collection::class, $snack->comments);
+        $snack->comments->each(fn($comment) => $this->assertInstanceOf(Comment::class, $comment));
+
+        $this->assertCount(2, $snack->comments);
+
+        $snack->comments->each(fn($comment) => $this->assertTrue($snack_comments->contains($comment)));
+        $snack->comments->each(fn($comment) => $this->assertFalse($other_snack_comments->contains($comment)));
     }
 }

@@ -2,6 +2,8 @@
 
 namespace Tests\Unit;
 
+use App\Models\Award;
+use App\Models\Awardable;
 use App\Models\Ingredient;
 use App\Models\IngredientImage;
 use App\Models\IngredientVideo;
