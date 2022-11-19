@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Interfaces\MorphCleaning;
+
 use App\Models\Traits\HasRandomFactory;
 use App\Models\Traits\MorphCascadeOnDelete;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
