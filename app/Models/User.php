@@ -113,4 +113,8 @@ class User extends Authenticatable {
     public function follows(){
         return $this->hasMany(Follow::class);
     }
+
+    public function favorites(){
+        return $this->hasMany(Favorite::class);
+    }
 }

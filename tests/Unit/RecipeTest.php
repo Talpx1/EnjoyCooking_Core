@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Models\Award;
 use App\Models\Awardable;
 use App\Models\Comment;
+use App\Models\Favorite;
 use App\Models\Ingredient;
 use App\Models\IngredientRecipe;
 use App\Models\Like;
@@ -976,5 +977,51 @@ class RecipeTest extends TestCase
 
         $recipe_likes->each(fn($like) => $this->assertTrue($recipe->likes->contains($like)));
         $other_recipe_likes->each(fn($like) => $this->assertFalse($recipe->likes->contains($like)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_morphs_many_favorites(){
+        $recipe = Recipe::factory()->create(['title' => 'test']);
+        $recipe_favorites = collect([
+            Favorite::factory()->create(['favoritable_id' => $recipe->id, 'favoritable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+            Favorite::factory()->create(['favoritable_id' => $recipe->id, 'favoritable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+        $other_recipe_favorites = collect([
+            Favorite::factory()->create(['favoritable_id'=>Recipe::factory()->create()->id, 'favoritable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+            Favorite::factory()->create(['favoritable_id'=>Recipe::factory()->create()->id, 'favoritable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+            Favorite::factory()->create(['favoritable_id'=>Recipe::factory()->create()->id, 'favoritable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+            Favorite::factory()->create(['favoritable_id'=>Recipe::factory()->create()->id, 'favoritable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+
+        $this->assertNotNull($recipe->favorites);
+
+        $this->assertInstanceOf(Collection::class, $recipe->favorites);
+        $recipe->favorites->each(fn($favorite) => $this->assertInstanceOf(Favorite::class, $favorite));
+
+        $this->assertCount(2, $recipe->favorites);
+
+        $recipe_favorites->each(fn($favorite) => $this->assertTrue($recipe->favorites->contains($favorite)));
+        $other_recipe_favorites->each(fn($favorite) => $this->assertFalse($recipe->favorites->contains($favorite)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_recipe_gets_deleted_its_related_records_in_favorites_table_get_deleted(){
+        $recipe = Recipe::factory()->create();
+        $favorites = collect([
+            Favorite::factory()->create(['favoritable_id'=>$recipe->id, 'favoritable_type'=>$recipe::class, 'user_id'=>User::factory()->create()->id]),
+            Favorite::factory()->create(['favoritable_id'=>$recipe->id, 'favoritable_type'=>$recipe::class, 'user_id'=>User::factory()->create()->id]),
+            Favorite::factory()->create(['favoritable_id'=>$recipe->id, 'favoritable_type'=>$recipe::class, 'user_id'=>User::factory()->create()->id]),
+        ]);
+
+        $recipe->delete();
+        $this->assertModelMissing($recipe);
+        $this->assertDatabaseMissing('recipes', ['title'=>$recipe->id]);
+        $this->assertDatabaseMissing('favorites', ['favoritable_id'=>$recipe->id, 'favoritable_type'=>$recipe::class]);
+
+        $favorites->each(fn($favorite) => $this->assertModelMissing($favorite));
     }
 }

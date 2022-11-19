@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\Award;
 use App\Models\Awardable;
+use App\Models\Favorite;
 use App\Models\Follow;
 use App\Models\Ingredient;
 use App\Models\IngredientImage;
@@ -499,6 +500,33 @@ class UserTest extends TestCase
 
         $follows->each(fn($repost) => $this->assertTrue($user->follows->contains($repost)));
         $other_follows->each(fn($repost) => $this->assertFalse($user->follows->contains($repost)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_user_has_many_favorites(){
+        $user = User::factory()->create();
+        $favorites = collect([
+            Favorite::factory()->create(['favoritable_id' => User::factory()->create()->id, 'favoritable_type' => User::class, 'user_id' => $user->id]),
+            Favorite::factory()->create(['favoritable_id' => User::factory()->create()->id, 'favoritable_type' => User::class, 'user_id' => $user->id]),
+            Favorite::factory()->create(['favoritable_id' => User::factory()->create()->id, 'favoritable_type' => User::class, 'user_id' => $user->id]),
+            Favorite::factory()->create(['favoritable_id' => User::factory()->create()->id, 'favoritable_type' => User::class, 'user_id' => $user->id]),
+            Favorite::factory()->create(['favoritable_id' => User::factory()->create()->id, 'favoritable_type' => User::class, 'user_id' => $user->id]),
+        ]);
+        $other_favorites = collect([
+            Favorite::factory()->create(['favoritable_id' => User::factory()->create()->id, 'favoritable_type' => User::class, 'user_id' => User::factory()->create()]),
+            Favorite::factory()->create(['favoritable_id' => User::factory()->create()->id, 'favoritable_type' => User::class, 'user_id' => User::factory()->create()])
+        ]);
+
+        $this->assertNotNull($user->favorites);
+        $this->assertInstanceOf(Collection::class, $user->favorites);
+        $this->assertCount(5, $user->favorites);
+
+        $user->favorites->each(fn($repost) => $this->assertInstanceOf(Favorite::class, $repost));
+
+        $favorites->each(fn($repost) => $this->assertTrue($user->favorites->contains($repost)));
+        $other_favorites->each(fn($repost) => $this->assertFalse($user->favorites->contains($repost)));
     }
 }
 
