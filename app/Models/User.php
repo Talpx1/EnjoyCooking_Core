@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Traits\NotifyDeletionToMorphs;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -11,7 +12,7 @@ use Spatie\Permission\Traits\HasRoles;
 use App\Models\Traits\HasRandomFactory;
 
 class User extends Authenticatable {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles, HasRandomFactory;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, HasRandomFactory, NotifyDeletionToMorphs;
 
     /**
      * The attributes that are mass assignable.
@@ -43,6 +44,8 @@ class User extends Authenticatable {
         'email_verified_at' => 'datetime',
         'date_of_birth' => 'date',
     ];
+
+    private static $morphs = [Follow::class];
 
     public function reposts()
     {
@@ -101,5 +104,13 @@ class User extends Authenticatable {
 
     public function tags(){
         return $this->morphToMany(Award::class, 'awardable');
+    }
+
+    public function followers(){
+        return $this->morphMany(Follow::class, 'followable');
+    }
+
+    public function follows(){
+        return $this->hasMany(Follow::class);
     }
 }

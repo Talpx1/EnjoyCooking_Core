@@ -2,11 +2,13 @@
 
 namespace Tests\Unit;
 
+use App\Models\Follow;
 use App\Models\Ingredient;
 use App\Models\Recipe;
 use App\Models\Snack;
 use App\Models\Tag;
 use App\Models\Taggable;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -123,6 +125,52 @@ class TagTest extends TestCase{
             $this->assertTrue($snacks->contains($snack));
             $this->assertFalse($other_snacks->contains($snack));
         });
+    }
+
+    /**
+     * @test
+     */
+    public function test_tag_morphs_many_follows(){
+        $tag = Tag::factory()->create(['name' => 'test']);
+        $tag_followers = collect([
+            Follow::factory()->create(['followable_id' => $tag->id, 'followable_type' => $tag::class, 'user_id' => User::factory()->create()->id]),
+            Follow::factory()->create(['followable_id' => $tag->id, 'followable_type' => $tag::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+        $other_tag_followers = collect([
+            Follow::factory()->create(['followable_id'=>Tag::factory()->create()->id, 'followable_type' => $tag::class, 'user_id' => User::factory()->create()->id]),
+            Follow::factory()->create(['followable_id'=>Tag::factory()->create()->id, 'followable_type' => $tag::class, 'user_id' => User::factory()->create()->id]),
+            Follow::factory()->create(['followable_id'=>Tag::factory()->create()->id, 'followable_type' => $tag::class, 'user_id' => User::factory()->create()->id]),
+            Follow::factory()->create(['followable_id'=>Tag::factory()->create()->id, 'followable_type' => $tag::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+
+        $this->assertNotNull($tag->followers);
+
+        $this->assertInstanceOf(Collection::class, $tag->followers);
+        $tag->followers->each(fn($follow) => $this->assertInstanceOf(Follow::class, $follow));
+
+        $this->assertCount(2, $tag->followers);
+
+        $tag_followers->each(fn($follow) => $this->assertTrue($tag->followers->contains($follow)));
+        $other_tag_followers->each(fn($follow) => $this->assertFalse($tag->followers->contains($follow)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_tag_gets_deleted_its_related_records_in_follows_table_get_deleted(){
+        $tag = Tag::factory()->create();
+        $follows = collect([
+            Follow::factory()->create(['followable_id'=>$tag->id, 'followable_type'=>$tag::class, 'user_id' => User::factory()->create()->id]),
+            Follow::factory()->create(['followable_id'=>$tag->id, 'followable_type'=>$tag::class, 'user_id' => User::factory()->create()->id]),
+            Follow::factory()->create(['followable_id'=>$tag->id, 'followable_type'=>$tag::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+
+        $tag->delete();
+        $this->assertModelMissing($tag);
+        $this->assertDatabaseMissing('tags', ['title'=>$tag->id]);
+        $this->assertDatabaseMissing('follows', ['followable_id'=>$tag->id, 'followable_type'=>$tag::class]);
+
+        $follows->each(fn($follow) => $this->assertModelMissing($follow));
     }
 
 }

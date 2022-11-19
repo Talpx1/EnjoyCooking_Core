@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\Award;
 use App\Models\Awardable;
+use App\Models\Follow;
 use App\Models\Ingredient;
 use App\Models\IngredientImage;
 use App\Models\IngredientVideo;
@@ -425,6 +426,79 @@ class UserTest extends TestCase
 
         $other_ratings->each(fn($rating) => $this->assertTrue($other_user->ratings->contains($rating)));
         $other_ratings->each(fn($rating) => $this->assertFalse($user->ratings->contains($rating)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_user_morphs_many_follows(){
+        $user = User::factory()->create(['first_name' => 'test']);
+        $user_followers = collect([
+            Follow::factory()->create(['followable_id' => $user->id, 'followable_type' => $user::class, 'user_id' => User::factory()->create()->id]),
+            Follow::factory()->create(['followable_id' => $user->id, 'followable_type' => $user::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+        $other_user_followers = collect([
+            Follow::factory()->create(['followable_id'=>User::factory()->create()->id, 'followable_type' => $user::class, 'user_id' => User::factory()->create()->id]),
+            Follow::factory()->create(['followable_id'=>User::factory()->create()->id, 'followable_type' => $user::class, 'user_id' => User::factory()->create()->id]),
+            Follow::factory()->create(['followable_id'=>User::factory()->create()->id, 'followable_type' => $user::class, 'user_id' => User::factory()->create()->id]),
+            Follow::factory()->create(['followable_id'=>User::factory()->create()->id, 'followable_type' => $user::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+
+        $this->assertNotNull($user->followers);
+
+        $this->assertInstanceOf(Collection::class, $user->followers);
+        $user->followers->each(fn($follow) => $this->assertInstanceOf(Follow::class, $follow));
+
+        $this->assertCount(2, $user->followers);
+
+        $user_followers->each(fn($follow) => $this->assertTrue($user->followers->contains($follow)));
+        $other_user_followers->each(fn($follow) => $this->assertFalse($user->followers->contains($follow)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_user_gets_deleted_its_related_records_in_follows_table_get_deleted(){
+        $user = User::factory()->create();
+        $follows = collect([
+            Follow::factory()->create(['followable_id'=>$user->id, 'followable_type'=>$user::class, 'user_id'=>User::factory()->create()->id]),
+            Follow::factory()->create(['followable_id'=>$user->id, 'followable_type'=>$user::class, 'user_id'=>User::factory()->create()->id]),
+            Follow::factory()->create(['followable_id'=>$user->id, 'followable_type'=>$user::class, 'user_id'=>User::factory()->create()->id]),
+        ]);
+
+        $user->delete();
+        $this->assertModelMissing($user);
+        $this->assertDatabaseMissing('users', ['title'=>$user->id]);
+        $this->assertDatabaseMissing('follows', ['followable_id'=>$user->id, 'followable_type'=>$user::class]);
+
+        $follows->each(fn($follow) => $this->assertModelMissing($follow));
+    }
+
+    /**
+     * @test
+     */
+    public function test_user_has_many_follows(){
+        $user = User::factory()->create();
+        $follows = collect([
+            Follow::factory()->create(['followable_id' => User::factory()->create()->id, 'followable_type' => User::class, 'user_id' => $user->id]),
+            Follow::factory()->create(['followable_id' => User::factory()->create()->id, 'followable_type' => User::class, 'user_id' => $user->id]),
+            Follow::factory()->create(['followable_id' => User::factory()->create()->id, 'followable_type' => User::class, 'user_id' => $user->id]),
+            Follow::factory()->create(['followable_id' => User::factory()->create()->id, 'followable_type' => User::class, 'user_id' => $user->id]),
+            Follow::factory()->create(['followable_id' => User::factory()->create()->id, 'followable_type' => User::class, 'user_id' => $user->id]),
+        ]);
+        $other_follows = collect([
+            Follow::factory()->create(['followable_id' => User::factory()->create()->id, 'followable_type' => User::class, 'user_id' => User::factory()->create()]),
+            Follow::factory()->create(['followable_id' => User::factory()->create()->id, 'followable_type' => User::class, 'user_id' => User::factory()->create()])
+        ]);
+
+        $this->assertNotNull($user->follows);
+        $this->assertInstanceOf(Collection::class, $user->follows);
+        $this->assertCount(5, $user->follows);
+
+        $user->follows->each(fn($repost) => $this->assertInstanceOf(Follow::class, $repost));
+
+        $follows->each(fn($repost) => $this->assertTrue($user->follows->contains($repost)));
+        $other_follows->each(fn($repost) => $this->assertFalse($user->follows->contains($repost)));
     }
 }
 
