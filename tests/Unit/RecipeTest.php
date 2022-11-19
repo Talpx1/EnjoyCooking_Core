@@ -7,6 +7,7 @@ use App\Models\Awardable;
 use App\Models\Comment;
 use App\Models\Ingredient;
 use App\Models\IngredientRecipe;
+use App\Models\Like;
 use App\Models\Rating;
 use App\Models\RecipeImage;
 use App\Models\RecipeStep;
@@ -880,10 +881,9 @@ class RecipeTest extends TestCase
         $recipe->delete();
         $this->assertModelMissing($recipe);
         $this->assertDatabaseMissing('recipes', ['title'=>$recipe->id]);
+        $this->assertDatabaseMissing('comments', ['commentable_id'=>$recipe->id, 'commentable_type'=>$recipe::class]);
 
-        $comments->each(function($tag) use ($recipe){
-            $this->assertDatabaseMissing('comments', ['tag_id'=>$tag->id, 'commentable_id'=>$recipe->id, 'commentable_type'=>$recipe::class]);
-        });
+        $comments->each(fn($comment) => $this->assertModelMissing($comment));
     }
 
     /**
@@ -900,9 +900,81 @@ class RecipeTest extends TestCase
         $recipe->delete();
         $this->assertModelMissing($recipe);
         $this->assertDatabaseMissing('recipes', ['title'=>$recipe->id]);
+        $this->assertDatabaseMissing('ratings', ['rateable_id'=>$recipe->id, 'rateable_type'=>$recipe::class]);
 
-        $ratings->each(function($tag) use ($recipe){
-            $this->assertDatabaseMissing('ratings', ['tag_id'=>$tag->id, 'rateable_id'=>$recipe->id, 'rateable_type'=>$recipe::class]);
-        });
+        $ratings->each(fn($rating) => $this->assertModelMissing($rating));
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_recipe_gets_deleted_its_related_records_in_likes_table_get_deleted(){
+        $recipe = Recipe::factory()->create();
+        $likes = collect([
+            Like::factory()->create(['likeable_id'=>$recipe->id, 'likeable_type'=>$recipe::class, 'user_id'=>User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>$recipe->id, 'likeable_type'=>$recipe::class, 'user_id'=>User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>$recipe->id, 'likeable_type'=>$recipe::class, 'user_id'=>User::factory()->create()->id]),
+        ]);
+
+        $recipe->delete();
+        $this->assertModelMissing($recipe);
+        $this->assertDatabaseMissing('recipes', ['title'=>$recipe->id]);
+        $this->assertDatabaseMissing('likes', ['likeable_id'=>$recipe->id, 'likeable_type'=>$recipe::class]);
+
+        $likes->each(fn($like) => $this->assertModelMissing($like));
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_morphs_many_reposts(){
+        $recipe = Recipe::factory()->create(['title' => 'test']);
+        $recipe_reposts = collect([
+            Repost::factory()->create(['repostable_id' => $recipe->id, 'repostable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+            Repost::factory()->create(['repostable_id' => $recipe->id, 'repostable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+        $other_recipe_reposts = collect([
+            Repost::factory()->create(['repostable_id'=>Recipe::factory()->create()->id, 'repostable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+            Repost::factory()->create(['repostable_id'=>Recipe::factory()->create()->id, 'repostable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+            Repost::factory()->create(['repostable_id'=>Recipe::factory()->create()->id, 'repostable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+            Repost::factory()->create(['repostable_id'=>Recipe::factory()->create()->id, 'repostable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+
+        $this->assertNotNull($recipe->reposts);
+
+        $this->assertInstanceOf(Collection::class, $recipe->reposts);
+        $recipe->reposts->each(fn($repost) => $this->assertInstanceOf(Repost::class, $repost));
+
+        $this->assertCount(2, $recipe->reposts);
+
+        $recipe_reposts->each(fn($repost) => $this->assertTrue($recipe->reposts->contains($repost)));
+        $other_recipe_reposts->each(fn($repost) => $this->assertFalse($recipe->reposts->contains($repost)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_morphs_many_likes(){
+        $recipe = Recipe::factory()->create(['title' => 'test']);
+        $recipe_likes = collect([
+            Like::factory()->create(['likeable_id' => $recipe->id, 'likeable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id' => $recipe->id, 'likeable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+        $other_recipe_likes = collect([
+            Like::factory()->create(['likeable_id'=>Recipe::factory()->create()->id, 'likeable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>Recipe::factory()->create()->id, 'likeable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>Recipe::factory()->create()->id, 'likeable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>Recipe::factory()->create()->id, 'likeable_type' => $recipe::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+
+        $this->assertNotNull($recipe->likes);
+
+        $this->assertInstanceOf(Collection::class, $recipe->likes);
+        $recipe->likes->each(fn($like) => $this->assertInstanceOf(Like::class, $like));
+
+        $this->assertCount(2, $recipe->likes);
+
+        $recipe_likes->each(fn($like) => $this->assertTrue($recipe->likes->contains($like)));
+        $other_recipe_likes->each(fn($like) => $this->assertFalse($recipe->likes->contains($like)));
     }
 }

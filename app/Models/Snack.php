@@ -13,14 +13,14 @@ class Snack extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
-    private static $morphs = [Taggable::class, Comment::class];
+    private static $morphs = [Taggable::class, Comment::class, Like::class];
 
     public function recipe(){
         return $this->belongsTo(Recipe::class);
     }
 
     public function user(){
-        return $this->belongsTo(Recipe::class);
+        return $this->belongsTo(User::class);
     }
 
     public function tags(){
@@ -29,5 +29,9 @@ class Snack extends Model
 
     public function comments(){
         return $this->morphMany(Comment::class, 'commentable');
+    }
+
+    public function likes(){
+        return $this->morphMany(Like::class, 'likeable');
     }
 }

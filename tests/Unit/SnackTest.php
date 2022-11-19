@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\Comment;
+use App\Models\Like;
 use App\Models\Recipe;
 use App\Models\Snack;
 use App\Models\Tag;
@@ -204,4 +205,62 @@ class SnackTest extends TestCase{
         $snack->comments->each(fn($comment) => $this->assertTrue($snack_comments->contains($comment)));
         $snack->comments->each(fn($comment) => $this->assertFalse($other_snack_comments->contains($comment)));
     }
+
+    /**
+     * @test
+     */
+    public function test_snack_belongs_to_user(){
+        $user = User::factory()->create();
+        $snack = Snack::factory()->create(['user_id' => $user->id]);
+        $this->assertNotNull($snack->user);
+        $this->assertInstanceOf(User::class, $snack->user);
+        $this->assertEquals($user->id, $snack->user->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_snack_gets_deleted_its_related_records_in_likes_table_get_deleted(){
+        $snack = Recipe::factory()->create();
+        $likes = collect([
+            Like::factory()->create(['likeable_id'=>$snack->id, 'likeable_type'=>$snack::class, 'user_id'=>User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>$snack->id, 'likeable_type'=>$snack::class, 'user_id'=>User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>$snack->id, 'likeable_type'=>$snack::class, 'user_id'=>User::factory()->create()->id]),
+        ]);
+
+        $snack->delete();
+        $this->assertModelMissing($snack);
+        $this->assertDatabaseMissing('snacks', ['title'=>$snack->id]);
+        $this->assertDatabaseMissing('likes', ['likeable_id'=>$snack->id, 'likeable_type'=>$snack::class]);
+
+        $likes->each(fn($like) => $this->assertModelMissing($like));
+    }
+
+    /**
+     * @test
+     */
+    public function test_snack_morphs_many_likes(){
+        $snack = Recipe::factory()->create(['title' => 'test']);
+        $snack_likes = collect([
+            Like::factory()->create(['likeable_id' => $snack->id, 'likeable_type' => $snack::class, 'user_id' => User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id' => $snack->id, 'likeable_type' => $snack::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+        $other_snack_likes = collect([
+            Like::factory()->create(['likeable_id'=>Recipe::factory()->create()->id, 'likeable_type' => $snack::class, 'user_id' => User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>Recipe::factory()->create()->id, 'likeable_type' => $snack::class, 'user_id' => User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>Recipe::factory()->create()->id, 'likeable_type' => $snack::class, 'user_id' => User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>Recipe::factory()->create()->id, 'likeable_type' => $snack::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+
+        $this->assertNotNull($snack->likes);
+
+        $this->assertInstanceOf(Collection::class, $snack->likes);
+        $snack->likes->each(fn($like) => $this->assertInstanceOf(Like::class, $like));
+
+        $this->assertCount(2, $snack->likes);
+
+        $snack_likes->each(fn($like) => $this->assertTrue($snack->likes->contains($like)));
+        $other_snack_likes->each(fn($like) => $this->assertFalse($snack->likes->contains($like)));
+    }
+
 }

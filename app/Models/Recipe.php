@@ -14,7 +14,7 @@ class Recipe extends Model
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'slug'];
 
-    private static $morphs = [Taggable::class, Awardable::class, Repost::class, Comment::class, Rating::class];
+    private static $morphs = [Taggable::class, Awardable::class, Repost::class, Comment::class, Rating::class, Like::class];
 
     public function sluggable(): array{
         return [
@@ -98,5 +98,13 @@ class Recipe extends Model
 
     public function awards(){
         return $this->morphToMany(Award::class, 'awardable');
+    }
+
+    public function reposts(){
+        return $this->morphMany(Repost::class, 'repostable');
+    }
+
+    public function likes(){
+        return $this->morphMany(Like::class, 'likeable');
     }
 }

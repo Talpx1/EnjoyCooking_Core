@@ -13,7 +13,7 @@ class Comment extends Model{
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
 
-    private static $morphs = [Awardable::class];
+    private static $morphs = [Awardable::class, Like::class];
     private static $morphName = 'commentable';
 
     public function commentable(){
@@ -26,5 +26,9 @@ class Comment extends Model{
 
     public function awards(){
         return $this->morphToMany(Award::class, 'awardable');
+    }
+
+    public function likes(){
+        return $this->morphMany(Like::class, 'likeable');
     }
 }

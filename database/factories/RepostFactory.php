@@ -25,7 +25,7 @@ class RepostFactory extends Factory
         return [
             'repostable_id' => $model::getRandomOrCreate()->id,
             'repostable_type' => $model,
-            'user_id' => User::getRandomOrCreate()->id,
+            'user_id' =>  User::factory()->create()->id,
         ];
     }
 }

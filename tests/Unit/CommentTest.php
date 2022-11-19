@@ -7,6 +7,7 @@ use App\Models\Awardable;
 use App\Models\Comment;
 use App\Models\DifficultyLevel;
 use App\Models\Ingredient;
+use App\Models\Like;
 use App\Models\Recipe;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
@@ -239,5 +240,51 @@ class CommentTest extends TestCase
         $awards->each(function($award) use ($comment){
             $this->assertDatabaseMissing('awardables', ['award_id'=>$award->id, 'awardable_id'=>$comment->id, 'taggable_type'=>$comment::class]);
         });
+    }
+
+    /**
+     * @test
+     */
+    public function test_comment_morphs_many_likes(){
+        $comment = Comment::factory()->create(['body' => 'test']);
+        $comment_likes = collect([
+            Like::factory()->create(['likeable_id' => $comment->id, 'likeable_type' => $comment::class, 'user_id' => User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id' => $comment->id, 'likeable_type' => $comment::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+        $other_comment_likes = collect([
+            Like::factory()->create(['likeable_id'=>Comment::factory()->create()->id, 'likeable_type' => $comment::class, 'user_id' => User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>Comment::factory()->create()->id, 'likeable_type' => $comment::class, 'user_id' => User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>Comment::factory()->create()->id, 'likeable_type' => $comment::class, 'user_id' => User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>Comment::factory()->create()->id, 'likeable_type' => $comment::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+
+        $this->assertNotNull($comment->likes);
+
+        $this->assertInstanceOf(Collection::class, $comment->likes);
+        $comment->likes->each(fn($like) => $this->assertInstanceOf(Like::class, $like));
+
+        $this->assertCount(2, $comment->likes);
+
+        $comment_likes->each(fn($like) => $this->assertTrue($comment->likes->contains($like)));
+        $other_comment_likes->each(fn($like) => $this->assertFalse($comment->likes->contains($like)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_comment_gets_deleted_its_related_records_in_likes_table_get_deleted(){
+        $comment = Comment::factory()->create();
+        $likes = collect([
+            Like::factory()->create(['likeable_id'=>$comment->id, 'likeable_type'=>$comment::class, 'user_id'=>User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>$comment->id, 'likeable_type'=>$comment::class, 'user_id'=>User::factory()->create()->id]),
+            Like::factory()->create(['likeable_id'=>$comment->id, 'likeable_type'=>$comment::class, 'user_id'=>User::factory()->create()->id]),
+        ]);
+
+        $comment->delete();
+        $this->assertModelMissing($comment);
+        $this->assertDatabaseMissing('comments', ['title'=>$comment->id]);
+        $this->assertDatabaseMissing('likes', ['likeable_id'=>$comment->id, 'likeable_type'=>$comment::class]);
+
+        $likes->each(fn($like) => $this->assertModelMissing($like));
     }
 }
