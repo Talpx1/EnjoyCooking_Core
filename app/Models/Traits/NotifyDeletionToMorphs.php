@@ -2,7 +2,7 @@
 
 namespace App\Models\Traits;
 
-trait MorphCleaningOnDelete{
+trait NotifyDeletionToMorphs{
 
     protected static function booted(){
         static::deleting(function (self $model) {

@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\Traits\MorphCleaningOnDelete;
+use App\Models\Traits\NotifyDeletionToMorphs;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\HasRandomFactory;
@@ -10,7 +10,7 @@ use Cviebrock\EloquentSluggable\Sluggable;
 
 class Recipe extends Model
 {
-    use HasFactory, HasRandomFactory, Sluggable, MorphCleaningOnDelete;
+    use HasFactory, HasRandomFactory, Sluggable, NotifyDeletionToMorphs;
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'slug'];
 

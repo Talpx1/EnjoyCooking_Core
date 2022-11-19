@@ -3,13 +3,13 @@
 namespace App\Models;
 
 use App\Models\Traits\HasRandomFactory;
-use App\Models\Traits\MorphCleaningOnDelete;
+use App\Models\Traits\NotifyDeletionToMorphs;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Snack extends Model
 {
-    use HasFactory, HasRandomFactory, MorphCleaningOnDelete;
+    use HasFactory, HasRandomFactory, NotifyDeletionToMorphs;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
 

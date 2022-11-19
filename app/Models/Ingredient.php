@@ -3,14 +3,14 @@
 namespace App\Models;
 
 use App\Models\Traits\HasRandomFactory;
-use App\Models\Traits\MorphCleaningOnDelete;
+use App\Models\Traits\NotifyDeletionToMorphs;
 use Cviebrock\EloquentSluggable\Sluggable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Ingredient extends Model
 {
-    use HasFactory, HasRandomFactory, Sluggable, MorphCleaningOnDelete;
+    use HasFactory, HasRandomFactory, Sluggable, NotifyDeletionToMorphs;
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'slug'];
 
