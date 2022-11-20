@@ -26,7 +26,8 @@ class CommentFactory extends Factory
             'commentable_id' => $model::getRandomOrCreate()->id,
             'commentable_type' => $model,
             'body' => $this->faker->paragraph,
-            'user_id' => User::getRandomOrCreate()->id,
+            'user_id' => User::factory()->create()->id,
+            'parent_comment_id' => null
         ];
     }
 }

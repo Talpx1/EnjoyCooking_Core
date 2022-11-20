@@ -605,7 +605,7 @@ class RecipeTest extends TestCase
     /**
      * @test
      */
-    public function test_is_children_attribute(){
+    public function test_is_child_attribute(){
         $recipe = Recipe::factory()->create();
         $other_recipe = Recipe::factory()->create();
 

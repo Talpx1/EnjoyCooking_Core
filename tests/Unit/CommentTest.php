@@ -106,7 +106,7 @@ class CommentTest extends TestCase
     /**
      * @test
      */
-    public function test_combination_of_commentable_id_commentable_type_user_id_and_body_must_be_unique(){
+    public function test_combination_of_commentable_id_commentable_type_user_id_body_and_parent_comment_id_must_be_unique(){
         $recipe = Recipe::factory()->create();
         $recipe2 = Recipe::factory()->create();
         $execution = Execution::factory()->create();
@@ -115,6 +115,8 @@ class CommentTest extends TestCase
         $user2 = User::factory()->create();
         $body = 'test';
         $body2 = 'test2';
+
+        $comment = Comment::factory()->create();
 
 
         Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $recipe->id, 'commentable_type' => $recipe::class, 'body' => $body]);
@@ -152,6 +154,12 @@ class CommentTest extends TestCase
 
         Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $execution2->id, 'commentable_type' => $execution2::class, 'body' => $body2]);
         $this->assertDatabaseHas('comments', ['user_id' => $user->id, 'commentable_id' => $execution2->id, 'commentable_type' => $execution2::class]);
+
+        Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $recipe->id, 'commentable_type' => $recipe::class, 'body' => $body, 'parent_comment_id' => $comment->id]);
+        $this->assertDatabaseHas('comments', ['user_id' => $user->id, 'commentable_id' => $recipe->id, 'commentable_type' => $recipe::class, 'body' => $body, 'parent_comment_id' => $comment->id]);
+
+        Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $recipe2->id, 'commentable_type' => $recipe2::class, 'body' => $body, 'parent_comment_id' => $comment->id]);
+        $this->assertDatabaseHas('comments', ['user_id' => $user->id, 'commentable_id' => $recipe2->id, 'commentable_type' => $recipe2::class, 'body' => $body, 'parent_comment_id' => $comment->id]);
 
 
         try{
@@ -200,6 +208,14 @@ class CommentTest extends TestCase
 
         try{
             Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $execution2->id, 'commentable_type' => $execution2::class, 'body' => $body2]);
+        }catch(QueryException $e){ $this->assertUniqueConstraintFails($e); }
+
+        try{
+            Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $recipe->id, 'commentable_type' => $recipe::class, 'body' => $body, 'parent_comment_id' => $comment->id]);
+        }catch(QueryException $e){ $this->assertUniqueConstraintFails($e); }
+
+        try{
+            Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $recipe2->id, 'commentable_type' => $recipe2::class, 'body' => $body, 'parent_comment_id' => $comment->id]);
         }catch(QueryException $e){ $this->assertUniqueConstraintFails($e); }
     }
 
@@ -285,5 +301,114 @@ class CommentTest extends TestCase
         $this->assertDatabaseMissing('likes', ['likeable_id'=>$comment->id, 'likeable_type'=>$comment::class]);
 
         $likes->each(fn($like) => $this->assertModelMissing($like));
+    }
+
+    /**
+     * @test
+     */
+    public function test_reply_belongs_to_parent_comment(){
+        $parent = Comment::factory()->create();
+        $reply = Comment::factory()->create(['parent_comment_id' => $parent->id]);
+        $this->assertNotNull($reply->parentComment);
+        $this->assertInstanceOf(Comment::class, $reply->parentComment);
+        $this->assertEquals($reply->parentComment->id, $parent->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_comment_has_many_replies(){
+        $comment = Comment::factory()->create();
+        $other_comment = Comment::factory()->create();
+        $comment_replies = Comment::factory(2)->create(['parent_comment_id' => $comment->id]);
+        $other_comment_replies = Comment::factory(4)->create(['parent_comment_id'=>$other_comment->id]);
+
+        $this->assertNotNull($comment->replies);
+        $this->assertNotNull($other_comment->replies);
+
+        $this->assertInstanceOf(Collection::class, $comment->replies);
+        $this->assertInstanceOf(Collection::class, $other_comment->replies);
+
+        $comment->replies->each(fn($comment) => $this->assertInstanceOf(Comment::class, $comment));
+        $other_comment->replies->each(fn($comment) => $this->assertInstanceOf(Comment::class, $comment));
+
+        $this->assertCount(2, $comment->replies);
+        $this->assertCount(4, $other_comment->replies);
+
+        $comment->replies->each(fn($comment) => $this->assertTrue($comment_replies->contains($comment)));
+        $comment->replies->each(fn($comment) => $this->assertFalse($other_comment_replies->contains($comment)));
+
+        $other_comment->replies->each(fn($comment) => $this->assertFalse($comment_replies->contains($comment)));
+        $other_comment->replies->each(fn($comment) => $this->assertTrue($other_comment_replies->contains($comment)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_has_replies_attribute(){
+        $comment = Comment::factory()->create();
+        $other_comment = Comment::factory()->create();
+
+        $comment_replies = Comment::factory(5)->create(['parent_comment_id' => $comment->id]);
+
+        $this->assertNotEmpty($comment->replies);
+        $this->assertEmpty($other_comment->replies);
+
+        $this->assertCount(5, $comment->replies);
+
+        $this->assertTrue($comment->hasReplies);
+        $this->assertFalse($other_comment->hasReplies);
+    }
+
+    /**
+     * @test
+     */
+    public function test_is_reply_attribute(){
+        $comment = Comment::factory()->create();
+        $other_comment = Comment::factory()->create();
+
+        $comment_replies = Comment::factory(5)->create(['parent_comment_id' => $comment->id]);
+
+        $comment_replies->each(fn($child_comment) => $this->assertTrue($child_comment->isReply));
+        $this->assertFalse($other_comment->isReply);
+        $this->assertFalse($comment->isReply);
+    }
+
+    /**
+     * @test
+     */
+    public function test_replies_get_deleted_if_parent_comment_gets_deleted(){
+        $comment = Comment::factory()->create(['body' => 'comment_test']);
+        $other_comment = Comment::factory()->create(['body' => 'other_comment_test']);
+        $comment_replies = Comment::factory(3)->create(['body' => 'comment_reply','parent_comment_id' => $comment->id]);
+        $comment_reply_replies = Comment::factory(2)->create(['body' => 'comment_reply_reply','parent_comment_id' => $comment_replies->first()->id]);
+        $other_comment_replies = Comment::factory(5)->create(['body' => 'other_comment_reply','parent_comment_id' => $other_comment->id]);
+        $other_comment_reply_replies = Comment::factory(2)->create(['body' => 'comment_reply_reply','parent_comment_id' => $other_comment_replies->first()->id]);
+
+        $this->assertDatabaseHas('comments', ['body'=>'comment_test']);
+        $this->assertDatabaseHas('comments', ['body'=>'other_comment_test']);
+        $this->assertDatabaseHas('comments', ['body' => 'comment_reply', 'parent_comment_id' => $comment->id]);
+        $this->assertDatabaseHas('comments', ['body' => 'other_comment_reply', 'parent_comment_id' => $other_comment->id]);
+
+        $this->assertCount(3, $comment->replies);
+        $this->assertCount(5, $other_comment->replies);
+        $this->assertCount(2, $comment_replies->first()->replies);
+
+        $comment->delete();
+
+        $this->assertDatabaseMissing('comments', ['body'=>'comment_test']);
+        $this->assertDatabaseMissing('comments', ['body' => 'comment_reply', 'parent_comment_id' => $comment->id]);
+        $this->assertDatabaseMissing('comments', ['body' => 'comment_reply_reply', 'parent_comment_id' => $comment_replies->first()->id]);
+
+        $this->assertModelMissing($comment);
+        $comment_replies->each(fn($reply) => $this->assertModelMissing($reply));
+        $comment_reply_replies->each(fn($reply) => $this->assertModelMissing($reply));
+
+        $this->assertDatabaseHas('comments', ['body'=>'other_comment_test']);
+        $this->assertDatabaseHas('comments', ['body' => 'other_comment_reply','parent_comment_id' => $other_comment->id]);
+
+        $this->assertModelExists($other_comment);
+        $other_comment_replies->each(fn($reply) => $this->assertModelExists($reply));
+        $other_comment_reply_replies->each(fn($reply) => $this->assertModelExists($reply));
     }
 }

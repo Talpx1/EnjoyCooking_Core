@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Comment;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -19,9 +20,10 @@ return new class extends Migration
             $table->morphs('commentable');
             $table->text('body');
             $table->foreignIdFor(User::class)->constrained()->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignIdFor(Comment::class, 'parent_comment_id')->nullable()->constrained('comments')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
 
-            $table->unique(['commentable_id', 'commentable_type', 'body', 'user_id']);
+            $table->unique(['commentable_id', 'commentable_type', 'body', 'user_id', 'parent_comment_id']);
         });
     }
 

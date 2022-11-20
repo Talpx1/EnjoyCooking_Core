@@ -31,4 +31,20 @@ class Comment extends Model{
     public function likes(){
         return $this->morphMany(Like::class, 'likeable');
     }
+
+    public function parentComment(){
+        return $this->belongsTo(Comment::class, 'parent_comment_id');
+    }
+
+    public function replies(){
+        return $this->hasMany(Comment::class, 'parent_comment_id');
+    }
+
+    public function getHasRepliesAttribute(){
+        return $this->replies->count() > 0;
+    }
+
+    public function getIsReplyAttribute(){
+        return !is_null($this->parent_comment_id);
+    }
 }
