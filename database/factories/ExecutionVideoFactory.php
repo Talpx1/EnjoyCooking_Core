@@ -6,9 +6,9 @@ use App\Models\Execution;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ExecutionImage>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\ExecutionVideo>
  */
-class ExecutionImageFactory extends Factory
+class ExecutionVideoFactory extends Factory
 {
     /**
      * Define the model's default state.
@@ -19,7 +19,6 @@ class ExecutionImageFactory extends Factory
     {
         return [
             'path' => $this->faker->unique()->url,
-            'thumbnail_path' => $this->faker->unique()->url,
             'execution_id' => Execution::getRandomOrCreate()->id
         ];
     }

@@ -6,6 +6,8 @@ use App\Models\Award;
 use App\Models\Awardable;
 use App\Models\Comment;
 use App\Models\Execution;
+use App\Models\ExecutionImage;
+use App\Models\ExecutionVideo;
 use App\Models\Favorite;
 use App\Models\Like;
 use App\Models\Rating;
@@ -396,5 +398,43 @@ class ExecutionTest extends TestCase
 
         $execution->comments->each(fn($comment) => $this->assertTrue($execution_comments->contains($comment)));
         $execution->comments->each(fn($comment) => $this->assertFalse($other_execution_comments->contains($comment)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_execution_has_many_execution_images(){
+        $execution = Execution::factory()->create();
+        $execution_images = ExecutionImage::factory(2)->create(['execution_id' => $execution->id]);
+        $other_execution_images = ExecutionImage::factory(4)->create(['execution_id'=>Execution::factory()->create()->id]);
+
+        $this->assertNotNull($execution->images);
+
+        $this->assertInstanceOf(Collection::class, $execution->images);
+        $execution->images->each(fn($image) => $this->assertInstanceOf(ExecutionImage::class, $image));
+
+        $this->assertCount(2, $execution->images);
+
+        $execution->images->each(fn($image) => $this->assertTrue($execution_images->contains($image)));
+        $execution->images->each(fn($image) => $this->assertFalse($other_execution_images->contains($image)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_execution_has_many_execution_videos(){
+        $execution = Execution::factory()->create();
+        $execution_videos = ExecutionVideo::factory(2)->create(['execution_id' => $execution->id]);
+        $other_execution_videos = ExecutionVideo::factory(4)->create(['execution_id'=>Execution::factory()->create()->id]);
+
+        $this->assertNotNull($execution->videos);
+
+        $this->assertInstanceOf(Collection::class, $execution->videos);
+        $execution->videos->each(fn($video) => $this->assertInstanceOf(ExecutionVideo::class, $video));
+
+        $this->assertCount(2, $execution->videos);
+
+        $execution->videos->each(fn($video) => $this->assertTrue($execution_videos->contains($video)));
+        $execution->videos->each(fn($video) => $this->assertFalse($other_execution_videos->contains($video)));
     }
 }

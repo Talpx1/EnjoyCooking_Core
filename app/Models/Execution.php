@@ -44,4 +44,12 @@ class Execution extends Model
     public function comments(){
         return $this->morphMany(Comment::class, 'commentable');
     }
+
+    public function images(){
+        return $this->hasMany(ExecutionImage::class);
+    }
+
+    public function videos(){
+        return $this->hasMany(ExecutionVideo::class);
+    }
 }

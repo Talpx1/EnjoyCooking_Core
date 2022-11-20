@@ -6,7 +6,7 @@ use App\Models\Traits\HasRandomFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class ExecutionImage extends Model
+class ExecutionVideo extends Model
 {
     use HasFactory, HasRandomFactory;
 
