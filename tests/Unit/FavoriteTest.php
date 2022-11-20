@@ -83,7 +83,7 @@ class FavoriteTest extends TestCase
      */
     public function test_morphs_to_favoritable(){
         $recipe = Recipe::factory()->create();
-        $snack = Snack::factory()->create(); //TODO: replace with execution
+        $snack = Snack::factory()->create();
 
         $favorite1 = Favorite::factory()->create(['favoritable_id' => $recipe->id,'favoritable_type' => $recipe::class]);
         $favorite2 = Favorite::factory()->create(['favoritable_id' => $snack->id,'favoritable_type' => $snack::class]);

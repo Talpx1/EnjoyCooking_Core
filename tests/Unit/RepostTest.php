@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Models\Execution;
 use App\Models\Like;
 use Illuminate\Database\Eloquent\Collection;
 use Tests\TestCase;
@@ -85,20 +86,19 @@ class RepostTest extends TestCase
      * @test
      */
     public function test_morphs_to_repostable(){
-        //TODO: replace difficulty level with other repostables
         $recipe = Recipe::factory()->create();
-        $difficulty_level = DifficultyLevel::factory()->create();
+        $execution = Execution::factory()->create();
 
         $repost1 = Repost::factory()->create(['repostable_id' => $recipe->id,'repostable_type' => $recipe::class]);
-        $repost2 = Repost::factory()->create(['repostable_id' => $difficulty_level->id,'repostable_type' => $difficulty_level::class]);
+        $repost2 = Repost::factory()->create(['repostable_id' => $execution->id,'repostable_type' => $execution::class]);
 
         $this->assertNotNull($repost1->repostable);
         $this->assertInstanceOf($recipe::class, $repost1->repostable);
         $this->assertEquals($recipe->id, $repost1->repostable->id);
 
         $this->assertNotNull($repost2->repostable);
-        $this->assertInstanceOf($difficulty_level::class, $repost2->repostable);
-        $this->assertEquals($difficulty_level->id, $repost2->repostable->id);
+        $this->assertInstanceOf($execution::class, $repost2->repostable);
+        $this->assertEquals($execution->id, $repost2->repostable->id);
     }
 
     /**

@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\DifficultyLevel;
+use App\Models\Execution;
 use App\Models\Ingredient;
 use App\Models\Rating;
 use App\Models\Recipe;
@@ -91,20 +92,19 @@ class RatingTest extends TestCase
      * @test
      */
     public function test_morphs_to_rateable(){
-        //TODO: replace difficulty level with other rateables
         $recipe = Recipe::factory()->create();
-        $difficulty_level = DifficultyLevel::factory()->create();
+        $execution = Execution::factory()->create();
 
         $rating1 = Rating::factory()->create(['rateable_id' => $recipe->id,'rateable_type' => $recipe::class]);
-        $rating2 = Rating::factory()->create(['rateable_id' => $difficulty_level->id,'rateable_type' => $difficulty_level::class]);
+        $rating2 = Rating::factory()->create(['rateable_id' => $execution->id,'rateable_type' => $execution::class]);
 
         $this->assertNotNull($rating1->rateable);
         $this->assertInstanceOf($recipe::class, $rating1->rateable);
         $this->assertEquals($recipe->id, $rating1->rateable->id);
 
         $this->assertNotNull($rating2->rateable);
-        $this->assertInstanceOf($difficulty_level::class, $rating2->rateable);
-        $this->assertEquals($difficulty_level->id, $rating2->rateable->id);
+        $this->assertInstanceOf($execution::class, $rating2->rateable);
+        $this->assertEquals($execution->id, $rating2->rateable->id);
     }
 
     /**
@@ -121,7 +121,7 @@ class RatingTest extends TestCase
         Rating::factory()->create(['rateable_id' => $recipe->id,'rateable_type' => $recipe::class, 'user_id' => $user2->id]);
         $this->assertDatabaseHas('ratings', ['rateable_id' => $recipe->id,'rateable_type' => $recipe::class, 'user_id' => $user2->id]);
 
-        Rating::factory()->create(['rateable_id' => Ingredient::factory()->create()->id,'rateable_type' => Ingredient::class, 'user_id' => $user->id]);//TODO: replace ingredient with other rateables
+        Rating::factory()->create(['rateable_id' => Execution::factory()->create()->id,'rateable_type' => Execution::class, 'user_id' => $user->id]);
 
         $this->expectException(QueryException::class);
         Rating::factory()->create(['rateable_id' => $recipe->id,'rateable_type' => $recipe::class, 'user_id' => $user->id]);

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Execution;
 use App\Models\Ingredient;
 use App\Models\Recipe;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -21,7 +22,7 @@ class RepostFactory extends Factory
      */
     public function definition()
     {
-        $model = Arr::random([Recipe::class, Ingredient::class]); //TODO: change ingredient with Execution
+        $model = Arr::random([Recipe::class, Execution::class]);
         return [
             'repostable_id' => $model::getRandomOrCreate()->id,
             'repostable_type' => $model,

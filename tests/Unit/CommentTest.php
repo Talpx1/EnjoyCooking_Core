@@ -6,6 +6,7 @@ use App\Models\Award;
 use App\Models\Awardable;
 use App\Models\Comment;
 use App\Models\DifficultyLevel;
+use App\Models\Execution;
 use App\Models\Ingredient;
 use App\Models\Like;
 use App\Models\Recipe;
@@ -87,20 +88,19 @@ class CommentTest extends TestCase
      * @test
      */
     public function test_morphs_to_commentable(){
-        //TODO: replace difficulty level with other commentables
         $recipe = Recipe::factory()->create();
-        $difficulty_level = DifficultyLevel::factory()->create();
+        $execution = Execution::factory()->create();
 
         $comment1 = Comment::factory()->create(['commentable_id' => $recipe->id,'commentable_type' => $recipe::class]);
-        $comment2 = Comment::factory()->create(['commentable_id' => $difficulty_level->id,'commentable_type' => $difficulty_level::class]);
+        $comment2 = Comment::factory()->create(['commentable_id' => $execution->id,'commentable_type' => $execution::class]);
 
         $this->assertNotNull($comment1->commentable);
         $this->assertInstanceOf($recipe::class, $comment1->commentable);
         $this->assertEquals($recipe->id, $comment1->commentable->id);
 
         $this->assertNotNull($comment2->commentable);
-        $this->assertInstanceOf($difficulty_level::class, $comment2->commentable);
-        $this->assertEquals($difficulty_level->id, $comment2->commentable->id);
+        $this->assertInstanceOf($execution::class, $comment2->commentable);
+        $this->assertEquals($execution->id, $comment2->commentable->id);
     }
 
     /**
@@ -109,9 +109,8 @@ class CommentTest extends TestCase
     public function test_combination_of_commentable_id_commentable_type_user_id_and_body_must_be_unique(){
         $recipe = Recipe::factory()->create();
         $recipe2 = Recipe::factory()->create();
-        //TODO: replace Ingredient with Execution or other commentable
-        $ingredient = Ingredient::factory()->create();
-        $ingredient2 = Ingredient::factory()->create();
+        $execution = Execution::factory()->create();
+        $execution2 = Execution::factory()->create();
         $user = User::factory()->create();
         $user2 = User::factory()->create();
         $body = 'test';
@@ -124,11 +123,11 @@ class CommentTest extends TestCase
         Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $recipe->id, 'commentable_type' => $recipe::class, 'body' => $body2]);
         $this->assertDatabaseHas('comments', ['user_id' => $user->id, 'commentable_id' => $recipe->id, 'commentable_type' => $recipe::class]);
 
-        Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $ingredient->id, 'commentable_type' => $ingredient::class, 'body' => $body]);
-        $this->assertDatabaseHas('comments', ['user_id' => $user->id, 'commentable_id' => $ingredient->id, 'commentable_type' => $ingredient::class]);
+        Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $execution->id, 'commentable_type' => $execution::class, 'body' => $body]);
+        $this->assertDatabaseHas('comments', ['user_id' => $user->id, 'commentable_id' => $execution->id, 'commentable_type' => $execution::class]);
 
-        Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $ingredient->id, 'commentable_type' => $ingredient::class, 'body' => $body2]);
-        $this->assertDatabaseHas('comments', ['user_id' => $user->id, 'commentable_id' => $ingredient->id, 'commentable_type' => $ingredient::class]);
+        Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $execution->id, 'commentable_type' => $execution::class, 'body' => $body2]);
+        $this->assertDatabaseHas('comments', ['user_id' => $user->id, 'commentable_id' => $execution->id, 'commentable_type' => $execution::class]);
 
         Comment::factory()->create(['user_id' => $user2->id, 'commentable_id' => $recipe->id, 'commentable_type' => $recipe::class, 'body' => $body]);
         $this->assertDatabaseHas('comments', ['user_id' => $user2->id, 'commentable_id' => $recipe->id, 'commentable_type' => $recipe::class]);
@@ -136,11 +135,11 @@ class CommentTest extends TestCase
         Comment::factory()->create(['user_id' => $user2->id, 'commentable_id' => $recipe->id, 'commentable_type' => $recipe::class, 'body' => $body2]);
         $this->assertDatabaseHas('comments', ['user_id' => $user2->id, 'commentable_id' => $recipe->id, 'commentable_type' => $recipe::class]);
 
-        Comment::factory()->create(['user_id' => $user2->id, 'commentable_id' => $ingredient->id, 'commentable_type' => $ingredient::class, 'body' => $body]);
-        $this->assertDatabaseHas('comments', ['user_id' => $user2->id, 'commentable_id' => $ingredient->id, 'commentable_type' => $ingredient::class]);
+        Comment::factory()->create(['user_id' => $user2->id, 'commentable_id' => $execution->id, 'commentable_type' => $execution::class, 'body' => $body]);
+        $this->assertDatabaseHas('comments', ['user_id' => $user2->id, 'commentable_id' => $execution->id, 'commentable_type' => $execution::class]);
 
-        Comment::factory()->create(['user_id' => $user2->id, 'commentable_id' => $ingredient->id, 'commentable_type' => $ingredient::class, 'body' => $body2]);
-        $this->assertDatabaseHas('comments', ['user_id' => $user2->id, 'commentable_id' => $ingredient->id, 'commentable_type' => $ingredient::class]);
+        Comment::factory()->create(['user_id' => $user2->id, 'commentable_id' => $execution->id, 'commentable_type' => $execution::class, 'body' => $body2]);
+        $this->assertDatabaseHas('comments', ['user_id' => $user2->id, 'commentable_id' => $execution->id, 'commentable_type' => $execution::class]);
 
         Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $recipe2->id, 'commentable_type' => $recipe2::class, 'body' => $body]);
         $this->assertDatabaseHas('comments', ['user_id' => $user->id, 'commentable_id' => $recipe2->id, 'commentable_type' => $recipe2::class]);
@@ -148,11 +147,11 @@ class CommentTest extends TestCase
         Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $recipe2->id, 'commentable_type' => $recipe2::class, 'body' => $body2]);
         $this->assertDatabaseHas('comments', ['user_id' => $user->id, 'commentable_id' => $recipe2->id, 'commentable_type' => $recipe2::class]);
 
-        Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $ingredient2->id, 'commentable_type' => $ingredient2::class, 'body' => $body]);
-        $this->assertDatabaseHas('comments', ['user_id' => $user->id, 'commentable_id' => $ingredient2->id, 'commentable_type' => $ingredient2::class]);
+        Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $execution2->id, 'commentable_type' => $execution2::class, 'body' => $body]);
+        $this->assertDatabaseHas('comments', ['user_id' => $user->id, 'commentable_id' => $execution2->id, 'commentable_type' => $execution2::class]);
 
-        Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $ingredient2->id, 'commentable_type' => $ingredient2::class, 'body' => $body2]);
-        $this->assertDatabaseHas('comments', ['user_id' => $user->id, 'commentable_id' => $ingredient2->id, 'commentable_type' => $ingredient2::class]);
+        Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $execution2->id, 'commentable_type' => $execution2::class, 'body' => $body2]);
+        $this->assertDatabaseHas('comments', ['user_id' => $user->id, 'commentable_id' => $execution2->id, 'commentable_type' => $execution2::class]);
 
 
         try{
@@ -164,11 +163,11 @@ class CommentTest extends TestCase
         }catch(QueryException $e){ $this->assertUniqueConstraintFails($e); }
 
         try{
-            Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $ingredient->id, 'commentable_type' => $ingredient::class, 'body' => $body]);
+            Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $execution->id, 'commentable_type' => $execution::class, 'body' => $body]);
         }catch(QueryException $e){ $this->assertUniqueConstraintFails($e); }
 
         try{
-            Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $ingredient->id, 'commentable_type' => $ingredient::class, 'body' => $body2]);
+            Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $execution->id, 'commentable_type' => $execution::class, 'body' => $body2]);
         }catch(QueryException $e){ $this->assertUniqueConstraintFails($e); }
 
         try{
@@ -180,11 +179,11 @@ class CommentTest extends TestCase
         }catch(QueryException $e){ $this->assertUniqueConstraintFails($e); }
 
         try{
-            Comment::factory()->create(['user_id' => $user2->id, 'commentable_id' => $ingredient->id, 'commentable_type' => $ingredient::class, 'body' => $body]);
+            Comment::factory()->create(['user_id' => $user2->id, 'commentable_id' => $execution->id, 'commentable_type' => $execution::class, 'body' => $body]);
         }catch(QueryException $e){ $this->assertUniqueConstraintFails($e); }
 
         try{
-            Comment::factory()->create(['user_id' => $user2->id, 'commentable_id' => $ingredient->id, 'commentable_type' => $ingredient::class, 'body' => $body2]);
+            Comment::factory()->create(['user_id' => $user2->id, 'commentable_id' => $execution->id, 'commentable_type' => $execution::class, 'body' => $body2]);
         }catch(QueryException $e){ $this->assertUniqueConstraintFails($e); }
 
         try{
@@ -196,11 +195,11 @@ class CommentTest extends TestCase
         }catch(QueryException $e){ $this->assertUniqueConstraintFails($e); }
 
         try{
-            Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $ingredient2->id, 'commentable_type' => $ingredient2::class, 'body' => $body]);
+            Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $execution2->id, 'commentable_type' => $execution2::class, 'body' => $body]);
         }catch(QueryException $e){ $this->assertUniqueConstraintFails($e); }
 
         try{
-            Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $ingredient2->id, 'commentable_type' => $ingredient2::class, 'body' => $body2]);
+            Comment::factory()->create(['user_id' => $user->id, 'commentable_id' => $execution2->id, 'commentable_type' => $execution2::class, 'body' => $body2]);
         }catch(QueryException $e){ $this->assertUniqueConstraintFails($e); }
     }
 

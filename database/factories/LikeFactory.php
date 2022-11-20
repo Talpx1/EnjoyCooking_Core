@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Comment;
+use App\Models\Execution;
 use App\Models\Recipe;
 use App\Models\Repost;
 use App\Models\Snack;
@@ -22,7 +23,7 @@ class LikeFactory extends Factory
      */
     public function definition()
     {
-        $model = Arr::random([Recipe::class, Comment::class, Repost::class, Snack::class]);//TODO: add execution
+        $model = Arr::random([Recipe::class, Comment::class, Repost::class, Snack::class, Execution::class]);
         return [
             'likeable_id' => $model::getRandomOrCreate()->id,
             'likeable_type' => $model,

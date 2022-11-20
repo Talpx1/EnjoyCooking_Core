@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Execution;
 use App\Models\Recipe;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -19,7 +20,7 @@ class FavoriteFactory extends Factory
      */
     public function definition()
     {
-        $model = Arr::random([Recipe::class]); //TODO: add execution
+        $model = Arr::random([Recipe::class, Execution::class]);
         return [
             'favoritable_id' => $model::getRandomOrCreate()->id,
             'favoritable_type' => $model,

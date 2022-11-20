@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Execution;
 use App\Models\Ingredient;
 use App\Models\Recipe;
 use App\Models\User;
@@ -20,7 +21,7 @@ class CommentFactory extends Factory
      */
     public function definition()
     {
-        $model = Arr::random([Recipe::class, Ingredient::class]); //TODO: change ingredient with Execution
+        $model = Arr::random([Recipe::class, Execution::class]);
         return [
             'commentable_id' => $model::getRandomOrCreate()->id,
             'commentable_type' => $model,

@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\Comment;
+use App\Models\Favorite;
 use App\Models\Like;
 use App\Models\Recipe;
 use App\Models\Snack;
@@ -261,6 +262,52 @@ class SnackTest extends TestCase{
 
         $snack_likes->each(fn($like) => $this->assertTrue($snack->likes->contains($like)));
         $other_snack_likes->each(fn($like) => $this->assertFalse($snack->likes->contains($like)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_snack_morphs_many_favorites(){
+        $snack = Snack::factory()->create(['title' => 'test']);
+        $snack_favorites = collect([
+            Favorite::factory()->create(['favoritable_id' => $snack->id, 'favoritable_type' => $snack::class, 'user_id' => User::factory()->create()->id]),
+            Favorite::factory()->create(['favoritable_id' => $snack->id, 'favoritable_type' => $snack::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+        $other_snack_favorites = collect([
+            Favorite::factory()->create(['favoritable_id'=>Snack::factory()->create()->id, 'favoritable_type' => $snack::class, 'user_id' => User::factory()->create()->id]),
+            Favorite::factory()->create(['favoritable_id'=>Snack::factory()->create()->id, 'favoritable_type' => $snack::class, 'user_id' => User::factory()->create()->id]),
+            Favorite::factory()->create(['favoritable_id'=>Snack::factory()->create()->id, 'favoritable_type' => $snack::class, 'user_id' => User::factory()->create()->id]),
+            Favorite::factory()->create(['favoritable_id'=>Snack::factory()->create()->id, 'favoritable_type' => $snack::class, 'user_id' => User::factory()->create()->id]),
+        ]);
+
+        $this->assertNotNull($snack->favorites);
+
+        $this->assertInstanceOf(Collection::class, $snack->favorites);
+        $snack->favorites->each(fn($favorite) => $this->assertInstanceOf(Favorite::class, $favorite));
+
+        $this->assertCount(2, $snack->favorites);
+
+        $snack_favorites->each(fn($favorite) => $this->assertTrue($snack->favorites->contains($favorite)));
+        $other_snack_favorites->each(fn($favorite) => $this->assertFalse($snack->favorites->contains($favorite)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_snack_gets_deleted_its_related_records_in_favorites_table_get_deleted(){
+        $snack = Snack::factory()->create();
+        $favorites = collect([
+            Favorite::factory()->create(['favoritable_id'=>$snack->id, 'favoritable_type'=>$snack::class, 'user_id'=>User::factory()->create()->id]),
+            Favorite::factory()->create(['favoritable_id'=>$snack->id, 'favoritable_type'=>$snack::class, 'user_id'=>User::factory()->create()->id]),
+            Favorite::factory()->create(['favoritable_id'=>$snack->id, 'favoritable_type'=>$snack::class, 'user_id'=>User::factory()->create()->id]),
+        ]);
+
+        $snack->delete();
+        $this->assertModelMissing($snack);
+        $this->assertDatabaseMissing('snacks', ['title'=>$snack->id]);
+        $this->assertDatabaseMissing('favorites', ['favoritable_id'=>$snack->id, 'favoritable_type'=>$snack::class]);
+
+        $favorites->each(fn($favorite) => $this->assertModelMissing($favorite));
     }
 
 }

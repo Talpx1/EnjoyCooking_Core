@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Award;
 use App\Models\Comment;
+use App\Models\Execution;
 use App\Models\Recipe;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -21,7 +22,7 @@ class AwardableFactory extends Factory
      */
     public function definition()
     {
-        $model = Arr::random([Recipe::class, Comment::class]);//TODO: add execution
+        $model = Arr::random([Recipe::class, Comment::class, Execution::class]);
         return [
             'awardable_id' => $model::getRandomOrCreate()->id,
             'awardable_type' => $model,
