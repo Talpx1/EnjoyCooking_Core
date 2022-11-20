@@ -111,4 +111,8 @@ class Recipe extends Model
     public function favorites(){
         return $this->morphMany(Favorite::class, 'favoritable');
     }
+
+    public function executions(){
+        return $this->hasMany(Execution::class);
+    }
 }

@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Models\Award;
 use App\Models\Awardable;
 use App\Models\Comment;
+use App\Models\Execution;
 use App\Models\Favorite;
 use App\Models\Ingredient;
 use App\Models\IngredientRecipe;
@@ -1023,5 +1024,23 @@ class RecipeTest extends TestCase
         $this->assertDatabaseMissing('favorites', ['favoritable_id'=>$recipe->id, 'favoritable_type'=>$recipe::class]);
 
         $favorites->each(fn($favorite) => $this->assertModelMissing($favorite));
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_has_many_executions(){
+        $recipe = Recipe::factory()->create();
+        $recipe_executions = Execution::factory(3)->create(['recipe_id' => $recipe->id, 'user_id' => User::factory()->create()->id]);
+        $other_recipe_executions = Execution::factory(4)->create(['recipe_id' => Recipe::factory()->create()->id, 'user_id' => User::factory()->create()->id]);
+
+        $this->assertNotNull($recipe->executions);
+        $this->assertInstanceOf(Collection::class, $recipe->executions);
+        $this->assertCount(3, $recipe->executions);
+
+        $recipe->executions->each(fn($execution) => $this->assertInstanceOf(Execution::class, $execution));
+
+        $recipe_executions->each(fn($execution) => $this->assertTrue($recipe->executions->contains($execution)));
+        $other_recipe_executions->each(fn($execution) => $this->assertFalse($recipe->executions->contains($execution)));
     }
 }

@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\Award;
 use App\Models\Awardable;
+use App\Models\Execution;
 use App\Models\Favorite;
 use App\Models\Follow;
 use App\Models\Ingredient;
@@ -496,10 +497,10 @@ class UserTest extends TestCase
         $this->assertInstanceOf(Collection::class, $user->follows);
         $this->assertCount(5, $user->follows);
 
-        $user->follows->each(fn($repost) => $this->assertInstanceOf(Follow::class, $repost));
+        $user->follows->each(fn($follow) => $this->assertInstanceOf(Follow::class, $follow));
 
-        $follows->each(fn($repost) => $this->assertTrue($user->follows->contains($repost)));
-        $other_follows->each(fn($repost) => $this->assertFalse($user->follows->contains($repost)));
+        $follows->each(fn($follow) => $this->assertTrue($user->follows->contains($follow)));
+        $other_follows->each(fn($follow) => $this->assertFalse($user->follows->contains($follow)));
     }
 
     /**
@@ -523,10 +524,28 @@ class UserTest extends TestCase
         $this->assertInstanceOf(Collection::class, $user->favorites);
         $this->assertCount(5, $user->favorites);
 
-        $user->favorites->each(fn($repost) => $this->assertInstanceOf(Favorite::class, $repost));
+        $user->favorites->each(fn($favorite) => $this->assertInstanceOf(Favorite::class, $favorite));
 
-        $favorites->each(fn($repost) => $this->assertTrue($user->favorites->contains($repost)));
-        $other_favorites->each(fn($repost) => $this->assertFalse($user->favorites->contains($repost)));
+        $favorites->each(fn($favorite) => $this->assertTrue($user->favorites->contains($favorite)));
+        $other_favorites->each(fn($favorite) => $this->assertFalse($user->favorites->contains($favorite)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_user_has_many_executions(){
+        $user = User::factory()->create();
+        $user_executions = Execution::factory(3)->create(['recipe_id' => Recipe::factory()->create()->id, 'user_id' => $user->id]);
+        $other_user_executions = Execution::factory(4)->create(['recipe_id' => Recipe::factory()->create()->id, 'user_id' => User::factory()->create()->id]);
+
+        $this->assertNotNull($user->executions);
+        $this->assertInstanceOf(Collection::class, $user->executions);
+        $this->assertCount(3, $user->executions);
+
+        $user->executions->each(fn($execution) => $this->assertInstanceOf(Execution::class, $execution));
+
+        $user_executions->each(fn($execution) => $this->assertTrue($user->executions->contains($execution)));
+        $other_user_executions->each(fn($execution) => $this->assertFalse($user->executions->contains($execution)));
     }
 }
 
