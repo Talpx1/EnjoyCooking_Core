@@ -23,7 +23,7 @@ return new class extends Migration
             $table->foreignIdFor(Comment::class, 'parent_comment_id')->nullable()->constrained('comments')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
 
-            $table->unique(['commentable_id', 'commentable_type', 'body', 'user_id', 'parent_comment_id']);
+            // $table->unique(['commentable_id', 'commentable_type', 'body', 'user_id', 'parent_comment_id']); FIXME: impossible to create index because text field (body) cant be an index. Trying to set a really big varchar also dont work.
         });
     }
 

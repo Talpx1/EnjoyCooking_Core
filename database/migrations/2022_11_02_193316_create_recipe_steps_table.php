@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreignIdFor(Recipe::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
 
-            $table->unique(['recipe_id', 'description']);
+            // $table->unique(['recipe_id', 'description']); FIXME: impossible to create index because text field (description) cant be an index. Trying to set a really big varchar also dont work.
         });
     }
 
