@@ -7,8 +7,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Http\Testing\MimeType;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Intervention\Image\Facades\Image;
 use Tests\Feature\Seeders\PermissionsAndRolesSeeder;
 use Tests\TestCase;
 
@@ -64,7 +66,7 @@ class AwardControllerTest extends TestCase
         $this->postJson(route('award.store'), $award)->assertForbidden();
     }
 
-    public function test_award_image_gets_saved_on_store(){
+    public function test_award_icon_gets_saved_on_store(){
         Storage::fake('public');
         $this->actingAsAdmin();
 
@@ -79,5 +81,47 @@ class AwardControllerTest extends TestCase
         foreach(explode(',', config('upload.award.save_as')) as $format) Storage::disk('public')->assertExists($award->icon_path.".{$format}");
     }
 
-    //TODO: test icon get resized, test with multiple extensions, test request (size, mime ...)
+    public function test_award_icon_gets_resized_on_store(){
+        Storage::fake('public');
+        $this->actingAsAdmin();
+
+        //width and height get resized equally
+        $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png', config('upload.award.save_width')+5, config('upload.award.save_height')+5)->size(1000)->mimeType(MimeType::get('png'))]);
+        unset($award['icon_path']);
+
+        $this->postJson(route('award.store'), $award)->assertCreated()->assertJsonFragment(['name' => $award['name'], 'price' => $award['price']]);
+
+        $award = Award::latest()->first();
+        $this->assertNotNull($award->icon_path);
+
+        foreach(explode(',', config('upload.award.save_as')) as $format){
+            $this->assertTrue(Image::make(Storage::disk('public')->get($award->icon_path.".{$format}"))->width() == config('upload.award.save_width'));
+            $this->assertTrue(Image::make(Storage::disk('public')->get($award->icon_path.".{$format}"))->height() == config('upload.award.save_height'));
+        }
+
+        //TODO: test with other sizing
+    }
+
+    public function test_award_icon_gets_saved_in_multiple_formats_on_store(){
+        Storage::fake('public');
+        $this->actingAsAdmin();
+
+        //editing config value
+        Config::set('upload.award.save_as', 'png,jpeg,webp');
+
+        $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png', config('upload.award.save_width'), config('upload.award.save_height'))->size(1000)->mimeType(MimeType::get('png'))]);
+        unset($award['icon_path']);
+
+        $this->postJson(route('award.store'), $award)->assertCreated()->assertJsonFragment(['name' => $award['name'], 'price' => $award['price']]);
+
+        $award = Award::latest()->first();
+        $this->assertNotNull($award->icon_path);
+
+        foreach(explode(',', config('upload.award.save_as')) as $format){
+            $this->assertTrue(Image::make(Storage::disk('public')->get($award->icon_path.".{$format}"))->width() == config('upload.award.save_width'));
+            $this->assertTrue(Image::make(Storage::disk('public')->get($award->icon_path.".{$format}"))->height() == config('upload.award.save_height'));
+        }
+    }
+
+    //TODO: test request (size, mime ...)
 }

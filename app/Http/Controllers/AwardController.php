@@ -6,8 +6,7 @@ use App\Enums\Permissions;
 use App\Http\Requests\Award\StoreAwardRequest;
 use App\Http\Requests\Award\UpdateAwardRequest;
 use App\Models\Award;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
+use App\Utils\ImageUtils;
 
 class AwardController extends Controller
 {
@@ -31,14 +30,9 @@ class AwardController extends Controller
 
         $data = $request->validated();
 
-        $path = config('upload.award.save_path');
-        foreach(explode(',', config('upload.award.save_as')) as $format){
-            $image = Image::make($data['icon'])->resize(config('upload.award.save_width'), config('upload.award.save_height') , function ($constraint) {
-                $constraint->aspectRatio();
-                $constraint->upsize();
-            })->encode($format);
-            Storage::disk('public')->put($path.".{$format}", $image);
-        }
+        $path = config('upload.award.save_path') . uniqid(time().'_');
+        $extensions = explode(',', config('upload.award.save_as'));
+        ImageUtils::saveWithMultipleExtensions($data['icon'], 'public', $path, $extensions, config('upload.award.save_width'), config('upload.award.save_height'));
 
         unset($data['icon']);
         $data['icon_path'] = $path;
