@@ -18,4 +18,15 @@ class StoreAwardRequest extends FormRequest{
         return $this->user()->can(Permissions::STORE_AWARD->value);
     }
 
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, mixed>
+     */
+    public function rules(){
+        return array_merge(self::getCommonRules(), [
+            'name' => ['required', 'string', 'unique:awards,name'],
+        ]);
+    }
+
 }

@@ -17,4 +17,15 @@ class UpdateAwardRequest extends FormRequest{
     public function authorize(){
         return $this->user()->can(Permissions::UPDATE_AWARD->value);
     }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, mixed>
+     */
+    public function rules(){
+        return array_merge(self::getCommonRules(), [
+            'name' => ['required', 'string', 'unique:awards,name,'.$this->award->id],
+        ]);
+    }
 }

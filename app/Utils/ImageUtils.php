@@ -27,7 +27,7 @@ class ImageUtils {
         return Storage::disk($disk)->put($save_path.".{$extension}", $image);
     }
 
-    public static function saveWithMultipleExtensions($image_source, string $disk, string $save_path, array $extensions, ?int $save_width, ?int $save_height): bool {
+    public static function saveWithMultipleExtensions($image_source, string $disk, string $save_path, array $extensions, ?int $save_width = null, ?int $save_height = null): bool {
         foreach($extensions as $extension) {
             self::save($image_source, $disk, $save_path, $extension, $save_width, $save_height) ?: throw new RuntimeException(__('An error occurred while saving an image'), 500);
         }
