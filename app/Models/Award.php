@@ -40,7 +40,7 @@ class Award extends Model
         return collect($icons);
     }
 
-    public static function storeIcon($icon_source): string{
+    public static function storeIcon($icon_source): string{ //TODO: unit test
         $path = config('upload.award.save_path') . uniqid(time().'_');
         $extensions = explode(',', config('upload.award.save_as'));
         ImageUtils::saveWithMultipleExtensions($icon_source, 'public', $path, $extensions, config('upload.award.save_width'), config('upload.award.save_height'));
@@ -48,8 +48,9 @@ class Award extends Model
         return $path;
     }
 
-    public function deleteIconFiles(): bool{
-        $icons = glob(public_path("storage/{$this->icon_path}.*"));
+    public function deleteIconFiles(): bool{ //TODO: unit test
+        $icons = glob(Storage::disk('public')->path($this->icon_path.'.*'));
+        array_walk($icons, fn(&$path) => $path = str_replace(Storage::disk('public')->path(''), '', $path));
         return Storage::disk('public')->delete($icons);
     }
 }

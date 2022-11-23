@@ -67,14 +67,15 @@ class AwardController extends Controller
         if(!empty($request?->icon) ){
             $award->deleteIconFiles();
             $path = Award::storeIcon($data['icon']);
+
+            unset($data['icon']);
+            $data['icon_path'] = $path;
         }
 
-        unset($data['icon']);
-        $data['icon_path'] = $path;
 
         $award->update($data);
 
-        return response($award->fresh(), 201);
+        return response($award->fresh());
     }
 
     /**
