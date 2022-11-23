@@ -9,6 +9,10 @@ use App\Models\Recipe;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Storage;
+use Tests\Seeders\PermissionsAndRolesSeeder;
 use Tests\TestCase;
 
 class AwardTest extends TestCase
@@ -91,6 +95,109 @@ class AwardTest extends TestCase
             $this->assertTrue($comments->contains($comment));
             $this->assertFalse($other_comments->contains($comment));
         });
+    }
+
+
+    /**
+     * @test
+     */
+    public function test_icon_paths_attribute(){
+        $this->seed(PermissionsAndRolesSeeder::class);
+        $this->actingAsAdmin();
+        Storage::fake('public');
+        Config::set('upload.award.save_as', 'jpeg,png,webp');
+
+        $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png')]);
+        $this->postJson(route('award.store'), $award)->assertCreated();
+
+        $award = Award::latest()->first();
+
+
+        $this->assertNotEmpty($award->iconPaths);
+        $this->assertInstanceOf(\Illuminate\Support\Collection::class, $award->iconPaths);
+        $this->assertCount(3, $award->iconPaths);
+
+        $this->assertArrayHasKey('jpeg', $award->iconPaths->toArray());
+        $this->assertArrayHasKey('png', $award->iconPaths->toArray());
+        $this->assertArrayHasKey('webp', $award->iconPaths->toArray());
+
+        $this->assertNotEmpty($award->iconPaths->get('jpeg'));
+        $this->assertNotEmpty($award->iconPaths->get('png'));
+        $this->assertNotEmpty($award->iconPaths->get('webp'));
+
+        $this->assertStringContainsString('.jpeg',$award->iconPaths->get('jpeg'));
+        $this->assertStringContainsString('.png',$award->iconPaths->get('png'));
+        $this->assertStringContainsString('.webp',$award->iconPaths->get('webp'));
+
+        $this->assertEquals($award->iconPaths->get('jpeg'), storage_path("framework/testing/disks/public{$award->icon_path}.jpeg"));
+        $this->assertEquals($award->iconPaths->get('png'), storage_path("framework/testing/disks/public{$award->icon_path}.png"));
+        $this->assertEquals($award->iconPaths->get('webp'), storage_path("framework/testing/disks/public{$award->icon_path}.webp"));
+    }
+
+    /**
+     * @test
+     */
+    public function test_icon_urls_attribute(){
+        $this->seed(PermissionsAndRolesSeeder::class);
+        $this->actingAsAdmin();
+        Storage::fake('public');
+        Config::set('upload.award.save_as', 'jpeg,png,webp');
+
+        $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png')]);
+        $this->postJson(route('award.store'), $award)->assertCreated();
+
+        $award = Award::latest()->first();
+
+        $this->assertNotEmpty($award->iconUrls);
+        $this->assertInstanceOf(\Illuminate\Support\Collection::class, $award->iconUrls);
+        $this->assertCount(3, $award->iconUrls);
+
+        $this->assertArrayHasKey('jpeg', $award->iconUrls->toArray());
+        $this->assertArrayHasKey('png', $award->iconUrls->toArray());
+        $this->assertArrayHasKey('webp', $award->iconUrls->toArray());
+
+        $this->assertNotEmpty($award->iconUrls->get('jpeg'));
+        $this->assertNotEmpty($award->iconUrls->get('png'));
+        $this->assertNotEmpty($award->iconUrls->get('webp'));
+
+        $this->assertStringContainsString('.jpeg',$award->iconUrls->get('jpeg'));
+        $this->assertStringContainsString('.png',$award->iconUrls->get('png'));
+        $this->assertStringContainsString('.webp',$award->iconUrls->get('webp'));
+
+        $this->assertEquals($award->iconUrls->get('jpeg'), "/storage/{$award->icon_path}.jpeg");
+        $this->assertEquals($award->iconUrls->get('png'), "/storage/{$award->icon_path}.png");
+        $this->assertEquals($award->iconUrls->get('webp'), "/storage/{$award->icon_path}.webp");
+    }
+
+    /**
+     * @test
+     */
+    public function test_icon_attribute(){
+        $this->seed(PermissionsAndRolesSeeder::class);
+        $this->actingAsAdmin();
+        Storage::fake('public');
+        Config::set('upload.award.save_as', 'jpeg,png,webp');
+
+        $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png')]);
+        $this->postJson(route('award.store'), $award)->assertCreated();
+
+        $award = Award::latest()->first();
+
+        $this->assertNotEmpty($award->icons);
+        $this->assertInstanceOf(\Illuminate\Support\Collection::class, $award->icons);
+        $this->assertCount(3, $award->icons);
+
+        $this->assertArrayHasKey('jpeg', $award->icons->toArray());
+        $this->assertArrayHasKey('png', $award->icons->toArray());
+        $this->assertArrayHasKey('webp', $award->icons->toArray());
+
+        $this->assertNotEmpty($award->icons->get('jpeg'));
+        $this->assertNotEmpty($award->icons->get('png'));
+        $this->assertNotEmpty($award->icons->get('webp'));
+
+        $this->assertEquals($award->icons->get('jpeg'), base64_encode(Storage::disk('public')->get("{$award->icon_path}.jpeg")));
+        $this->assertEquals($award->icons->get('png'), base64_encode(Storage::disk('public')->get("{$award->icon_path}.png")));
+        $this->assertEquals($award->icons->get('webp'), base64_encode(Storage::disk('public')->get("{$award->icon_path}.webp")));
     }
 
 }

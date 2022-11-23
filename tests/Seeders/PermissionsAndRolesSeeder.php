@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature\Seeders;
+namespace Tests\Seeders;
 
 use Database\Seeders\PermissionRoleSeeder;
 use Database\Seeders\PermissionSeeder;

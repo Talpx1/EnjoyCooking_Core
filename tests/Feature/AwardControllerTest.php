@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Intervention\Image\Facades\Image;
-use Tests\Feature\Seeders\PermissionsAndRolesSeeder;
+use Tests\Seeders\PermissionsAndRolesSeeder;
 use Tests\TestCase;
 
 class AwardControllerTest extends TestCase

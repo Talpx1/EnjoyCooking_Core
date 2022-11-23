@@ -21,19 +21,19 @@ class Award extends Model
         return $this->morphedByMany(Comment::class, 'awardable');
     }
 
-    public function getIconPathsAttribute(){ //TODO: TEST
+    public function getIconPathsAttribute(){
         $icons = [];
         foreach(explode(',', config('upload.award.save_as')) as $format) $icons[$format] = Storage::disk('public')->path($this->icon_path . ".{$format}");
         return collect($icons);
     }
 
-    public function getIconUrlsAttribute(){ //TODO: TEST
+    public function getIconUrlsAttribute(){
         $icons = [];
         foreach(explode(',', config('upload.award.save_as')) as $format) $icons[$format] = Storage::disk('public')->url($this->icon_path . ".{$format}");
         return collect($icons);
     }
 
-    public function getIconsAttribute(){ //TODO: TEST
+    public function getIconsAttribute(){
         $icons = [];
         foreach(explode(',', config('upload.award.save_as')) as $format) $icons[$format] = base64_encode(Storage::disk('public')->get($this->icon_path . ".{$format}"));
         return collect($icons);
