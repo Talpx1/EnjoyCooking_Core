@@ -20,7 +20,20 @@ class PermissionRoleSeeder extends Seeder {
      */
     public function run() {
 
+
+
         $everyonePermissions = [
+            Permissions::INDEX_RECIPE->value,
+            Permissions::INDEX_INGREDIENT->value,
+            Permissions::INDEX_TAG->value,
+            Permissions::INDEX_CATEGORY->value,
+            Permissions::INDEX_COURSE->value,
+            Permissions::INDEX_DIFFICULTY_LEVEL->value,
+            Permissions::INDEX_COMMENT->value,
+            Permissions::INDEX_SNACK->value,
+            Permissions::INDEX_BADGE->value,
+            Permissions::INDEX_AWARD->value,
+            Permissions::INDEX_EXECUTION->value,
             Permissions::SHOW_RECIPE->value,
             Permissions::SHOW_INGREDIENT->value,
             Permissions::SHOW_TAG->value,

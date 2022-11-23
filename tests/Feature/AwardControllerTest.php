@@ -306,4 +306,14 @@ class AwardControllerTest extends TestCase
         $this->assertDatabaseHas(Award::class, ['name' => $award['name'], 'price' => 0]);
     }
 
+    /**
+     * @test
+     */
+    public function test_everyone_can_show_award(){
+        $award = Award::factory()->create();
+        $this->getJson(route('award.show', $award->id))->assertOk()->assertJson($award->toArray());
+    }
+
+    //TODO: test update, update request, destroy
+
 }

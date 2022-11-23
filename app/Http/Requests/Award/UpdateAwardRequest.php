@@ -25,6 +25,7 @@ class UpdateAwardRequest extends FormRequest{
      */
     public function rules(){
         return array_merge(self::getCommonRules(), [
+            'icon' => ['nullable', 'image', 'mimes:'.config('upload.award.accepted_file_types'), 'max:'.config('upload.award.max_file_size')],
             'name' => ['required', 'string', 'unique:awards,name,'.$this->award->id],
         ]);
     }

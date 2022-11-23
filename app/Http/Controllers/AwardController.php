@@ -7,6 +7,8 @@ use App\Http\Requests\Award\StoreAwardRequest;
 use App\Http\Requests\Award\UpdateAwardRequest;
 use App\Models\Award;
 use App\Utils\ImageUtils;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class AwardController extends Controller
 {
@@ -30,9 +32,7 @@ class AwardController extends Controller
 
         $data = $request->validated();
 
-        $path = config('upload.award.save_path') . uniqid(time().'_');
-        $extensions = explode(',', config('upload.award.save_as'));
-        ImageUtils::saveWithMultipleExtensions($data['icon'], 'public', $path, $extensions, config('upload.award.save_width'), config('upload.award.save_height'));
+        $path = Award::storeIcon($data['icon']);
 
         unset($data['icon']);
         $data['icon_path'] = $path;
@@ -48,9 +48,8 @@ class AwardController extends Controller
      * @param  \App\Models\Award  $award
      * @return \Illuminate\Http\Response
      */
-    public function show(Award $award)
-    {
-        //
+    public function show(Award $award){
+        return response($award->toJson(JSON_PRETTY_PRINT));
     }
 
     /**
@@ -60,9 +59,22 @@ class AwardController extends Controller
      * @param  \App\Models\Award  $award
      * @return \Illuminate\Http\Response
      */
-    public function update(UpdateAwardRequest $request, Award $award)
-    {
-        //
+    public function update(UpdateAwardRequest $request, Award $award){
+        if(!$request->user()->can(Permissions::UPDATE_AWARD->value)) abort(403);
+
+        $data = $request->validated();
+
+        if(!empty($request?->icon) ){
+            $award->deleteIconFiles();
+            $path = Award::storeIcon($data['icon']);
+        }
+
+        unset($data['icon']);
+        $data['icon_path'] = $path;
+
+        $award->update($data);
+
+        return response($award->fresh(), 201);
     }
 
     /**
@@ -71,8 +83,12 @@ class AwardController extends Controller
      * @param  \App\Models\Award  $award
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Award $award)
-    {
-        //
+    public function destroy(Award $award){
+        if(Auth::user()->can(Permissions::DESTROY_AWARD->value)) abort(403);
+
+        $award->deleteIconFiles();
+        $award->delete();
+
+        return response();
     }
 }

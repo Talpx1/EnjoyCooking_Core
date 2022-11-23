@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Traits\HasRandomFactory;
+use App\Utils\ImageUtils;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
@@ -37,5 +38,18 @@ class Award extends Model
         $icons = [];
         foreach(explode(',', config('upload.award.save_as')) as $format) $icons[$format] = base64_encode(Storage::disk('public')->get($this->icon_path . ".{$format}"));
         return collect($icons);
+    }
+
+    public static function storeIcon($icon_source): string{
+        $path = config('upload.award.save_path') . uniqid(time().'_');
+        $extensions = explode(',', config('upload.award.save_as'));
+        ImageUtils::saveWithMultipleExtensions($icon_source, 'public', $path, $extensions, config('upload.award.save_width'), config('upload.award.save_height'));
+
+        return $path;
+    }
+
+    public function deleteIconFiles(): bool{
+        $icons = glob(public_path("storage/{$this->icon_path}.*"));
+        return Storage::disk('public')->delete($icons);
     }
 }
