@@ -333,6 +333,7 @@ class AwardControllerTest extends TestCase
         $this->assertDatabaseMissing(Award::class, ['name' => 'test2']);
     }
 
+
     /**
      * @test
      */
@@ -438,10 +439,7 @@ class AwardControllerTest extends TestCase
         $this->assertNotNull($award->fresh()->icon_path);
 
         Storage::disk('public')->assertExists($award->fresh()->icon_path.".jpeg");
-        Storage::disk('public')->assertExists($award->fresh()->icon_path.".jpeg");
         Storage::disk('public')->assertExists($award->fresh()->icon_path.".png");
-        Storage::disk('public')->assertExists($award->fresh()->icon_path.".png");
-        Storage::disk('public')->assertExists($award->fresh()->icon_path.".webp");
         Storage::disk('public')->assertExists($award->fresh()->icon_path.".webp");
     }
 
@@ -610,6 +608,41 @@ class AwardControllerTest extends TestCase
         $this->assertDatabaseHas(Award::class, ['name' => $award->name, 'price' => 0]);
     }
 
-    //TODO: test destroy
+    public function test_authorized_user_can_destroy_award(){
+        $award = Award::factory()->create(['name' => 'test']);
+
+        $this->actingAsUser();
+        $this->deleteJson(route('award.destroy', $award->id))->assertForbidden();
+        $this->assertModelExists($award);
+        $this->assertDatabaseHas(Award::class, ['name' => 'test']);
+
+        $this->actingAsAdmin();
+        $this->deleteJson(route('award.destroy', $award->id))->assertOk();
+        $this->assertModelMissing($award);
+        $this->assertDatabaseMissing(Award::class, ['name' => 'test']);
+    }
+
+    public function test_award_icon_files_get_deleted_when_award_is_deleted(){
+        $this->actingAsAdmin();
+        Storage::fake('public');
+        Config::set('upload.award.save_as', 'png,jpeg,webp');
+
+        $this->postJson(route('award.store'), Award::factory()->raw(['name' => 'test', 'icon' => UploadedFile::fake()->image('test.png')]))->assertCreated()->assertJsonFragment(['name'=>'test']);
+        $award = Award::latest()->first();
+
+        $this->assertNotNull($award->icon_path);
+
+        Storage::disk('public')->assertExists($award->icon_path.".jpeg");
+        Storage::disk('public')->assertExists($award->icon_path.".png");
+        Storage::disk('public')->assertExists($award->icon_path.".webp");
+
+        $this->deleteJson(route('award.destroy', $award->id))->assertOk();
+        $this->assertModelMissing($award);
+        $this->assertDatabaseMissing(Award::class, ['name' => 'test']);
+
+        Storage::disk('public')->assertMissing($award->icon_path.".jpeg");
+        Storage::disk('public')->assertMissing($award->icon_path.".png");
+        Storage::disk('public')->assertMissing($award->icon_path.".webp");
+    }
 
 }
