@@ -16,6 +16,19 @@ class UserSeeder extends Seeder {
      * @return void
      */
     public function run() {
+        //oauth pkce user
+        User::factory()->create([
+            "first_name" => "OAuth",
+            "last_name" => "PKCE_CLIENT",
+            'username' => 'oauth_pkce_client',
+            "email" => "oauth_pkce_client@enjoy.cooking",
+            "password" => Hash::make("oauth_pkce_client"),
+            'user_type_id'=>UserTypes::STANDARD,
+            'date_of_birth' => '2022-01-01',
+            'gender_id'=>null,
+            'company_name'=> 'Enjoy Cooking',
+            'profession_group_id' => null
+        ]);
         //super admin
         User::factory()->create([
             "first_name" => "SuperAdmin",

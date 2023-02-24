@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder {
         $this->call(ProfessionGroupSeeder::class);
         $this->call(UserTypeSeeder::class);
         $this->call(UserSeeder::class);
+        $this->call(OAuthPKCEClientSeeder::class);
 
         $this->call(ModerationStatusSeeder::class);
         $this->call(VisibilityStatusSeeder::class);

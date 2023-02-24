@@ -6,9 +6,8 @@ use App\Enums\Permissions;
 use App\Http\Requests\Award\StoreAwardRequest;
 use App\Http\Requests\Award\UpdateAwardRequest;
 use App\Models\Award;
-use App\Utils\ImageUtils;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class AwardController extends Controller
 {
@@ -84,7 +83,8 @@ class AwardController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(Award $award){
-        if(!Auth::user()?->can(Permissions::DESTROY_AWARD->value) ?? false) abort(403);
+        return response()->json(User::permission(Permissions::DESTROY_AWARD->value)->get());
+        if( !(Auth::user()?->can(Permissions::DESTROY_AWARD->value) ?? false) ) abort(403, __('Unauthorized'));
 
         $award->deleteIconFiles();
         $award->delete();
