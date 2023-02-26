@@ -2,6 +2,8 @@
 
 namespace App\Http;
 
+use App\Http\Middleware\NotAuthenticated;
+use App\Http\Middleware\VerifyIsAllowedOrigin;
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
 class Kernel extends HttpKernel
@@ -63,6 +65,7 @@ class Kernel extends HttpKernel
         'signed' => \Illuminate\Routing\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'client' => \Laravel\Passport\Http\Middleware\CheckClientCredentials::class
+        'verify_origin' => VerifyIsAllowedOrigin::class,
+        'not_auth' => NotAuthenticated::class
     ];
 }

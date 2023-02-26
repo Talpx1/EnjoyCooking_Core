@@ -83,7 +83,6 @@ class AwardController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function destroy(Award $award){
-        return response()->json(User::permission(Permissions::DESTROY_AWARD->value)->get());
         if( !(Auth::user()?->can(Permissions::DESTROY_AWARD->value) ?? false) ) abort(403, __('Unauthorized'));
 
         $award->deleteIconFiles();

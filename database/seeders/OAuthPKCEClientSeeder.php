@@ -17,7 +17,7 @@ class OAuthPKCEClientSeeder extends Seeder
     {
         \Artisan::call('passport:install');
         (Passport::clientModel())::create([
-            'user_id' => 1,
+            'user_id' => null,
             'secret' => null,
             'provider' => null,
             'name' => 'Enjoy_Cooking_Core PKCE Grant Client',

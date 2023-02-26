@@ -27,6 +27,8 @@ class AwardControllerTest extends TestCase
      */
     public function test_everyone_can_index_awards(){
         $awards = Award::factory(40)->create();
+
+        $this->simulateAllowedOrigin();
         $this->getJson(route('award.index'))->assertOk()->assertJson(function(AssertableJson $json) use ($awards){
             $json->has('data')->etc();
             $awards->splice(0,15)->each(fn($award) => $this->assertTrue(collect($json->toArray()['data'])->pluck('id')->contains($award->id)));
@@ -39,6 +41,7 @@ class AwardControllerTest extends TestCase
     public function test_award_index_gets_paginated(){
         $awards = Award::factory(40)->create();
 
+        $this->simulateAllowedOrigin();
         $this->getJson(route('award.index'))->assertOk()->assertJson(function(AssertableJson $json) use ($awards){
             $json->hasAll(['data', 'current_page', "next_page_url", "path","per_page", "prev_page_url", "to", "total", "first_page_url", "from", "last_page", "last_page_url", "links"])->etc();
             $awards->chunk(15)[0]->each(fn($award) => $this->assertTrue(collect($json->toArray()['data'])->pluck('id')->contains($award->id)));
@@ -313,6 +316,8 @@ class AwardControllerTest extends TestCase
      */
     public function test_everyone_can_show_award(){
         $award = Award::factory()->create();
+
+        $this->simulateAllowedOrigin();
         $this->getJson(route('award.show', $award->id))->assertOk()->assertJson($award->toArray());
     }
 
