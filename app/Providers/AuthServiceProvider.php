@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\OauthAccessToken;
+use App\Models\OauthClient;
 use App\Models\OauthRefreshToken;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
@@ -28,5 +29,6 @@ class AuthServiceProvider extends ServiceProvider {
 
         Passport::useTokenModel(OauthAccessToken::class);
         Passport::useRefreshTokenModel(OauthRefreshToken::class);
+        Passport::useClientModel(OauthClient::class);
     }
 }

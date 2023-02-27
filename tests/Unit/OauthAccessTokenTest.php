@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Models\OauthAccessToken;
+use App\Models\OauthClient;
 use App\Models\OauthRefreshToken;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,5 +29,16 @@ class OauthAccessTokenTest extends TestCase
 
         $refresh_tokens->each(fn($refreshToken) => $this->assertTrue($access_token->refreshTokens->contains($refreshToken)));
         $other_refresh_tokens->each(fn($refreshToken) => $this->assertFalse($access_token->refreshTokens->contains($refreshToken)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_access_token_belongs_to_client(){
+        $client = OauthClient::factory()->create();
+        $token = OauthAccessToken::factory()->create(['client_id' => $client->id]);
+        $this->assertNotNull($token->client);
+        $this->assertInstanceOf(OauthClient::class, $token->client);
+        $this->assertEquals($client->id, $token->client->id);
     }
 }

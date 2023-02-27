@@ -63,4 +63,6 @@ return [
         ],
     ],
 
+    'first_party_clients' => explode(',', env('FIRST_PARTY_CLIENTS_ID', '')),
+
 ];

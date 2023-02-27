@@ -14,4 +14,9 @@ class OauthAccessToken extends Token
     {
         return $this->hasMany(OauthRefreshToken::class, 'access_token_id');
     }
+
+    public function oauthClient()
+    {
+        return $this->belongsTo(OauthClient::class, 'client_id');
+    }
 }
