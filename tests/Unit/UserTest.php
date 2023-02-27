@@ -10,8 +10,11 @@ use App\Models\Follow;
 use App\Models\Ingredient;
 use App\Models\IngredientImage;
 use App\Models\IngredientVideo;
+use App\Models\OauthAccessToken;
+use App\Models\OauthRefreshToken;
 use App\Models\Rating;
 use App\Models\Snack;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
@@ -470,7 +473,7 @@ class UserTest extends TestCase
 
         $user->delete();
         $this->assertModelMissing($user);
-        $this->assertDatabaseMissing('users', ['title'=>$user->id]);
+        $this->assertDatabaseMissing('users', ['email'=>$user->email]);
         $this->assertDatabaseMissing('follows', ['followable_id'=>$user->id, 'followable_type'=>$user::class]);
 
         $follows->each(fn($follow) => $this->assertModelMissing($follow));
@@ -546,6 +549,59 @@ class UserTest extends TestCase
 
         $user_executions->each(fn($execution) => $this->assertTrue($user->executions->contains($execution)));
         $other_user_executions->each(fn($execution) => $this->assertFalse($user->executions->contains($execution)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_user_has_many_oauth_access_tokens(){
+        $user = User::factory()->create();
+        $user_tokens = OauthAccessToken::factory(3)->create(['user_id' => $user->id]);
+        $other_user_tokens = OauthAccessToken::factory(4)->create(['user_id' => User::factory()->create()->id]);
+
+        $this->assertNotNull($user->oauthAccessTokens);
+        $this->assertInstanceOf(Collection::class, $user->oauthAccessTokens);
+        $this->assertCount(3, $user->oauthAccessTokens);
+
+        $user->oauthAccessTokens->each(fn($oauthAccessToken) => $this->assertInstanceOf(OauthAccessToken::class, $oauthAccessToken));
+
+        $user_tokens->each(fn($oauthAccessToken) => $this->assertTrue($user->oauthAccessTokens->contains($oauthAccessToken)));
+        $other_user_tokens->each(fn($oauthAccessToken) => $this->assertFalse($user->oauthAccessTokens->contains($oauthAccessToken)));
+    }
+
+    /**
+     * @test
+     */
+    public function test_when_user_gets_deleted_its_oauth_access_tokens_get_deleted(){
+        $user = User::factory()->create();
+        $user_tokens = OauthAccessToken::factory(3)->create(['user_id' => $user->id]);
+
+        $user->delete();
+
+        $this->assertModelMissing($user);
+        $this->assertDatabaseMissing('users', ['email'=>$user->email]);
+        $this->assertDatabaseMissing('oauth_access_tokens', ['user_id'=>$user->id]);
+
+        $user_tokens->each(fn($token) => $this->assertModelMissing($token));
+    }
+
+    /**
+     * @test
+     */
+    public function test_user_has_many_oauth_refresh_tokens_through_access_tokens(){
+        $user = User::factory()->create();
+        $user_tokens = OauthAccessToken::factory(3)->create(['user_id' => $user->id])
+            ->each(fn($access_token) => OauthRefreshToken::factory(3)->create(['access_token_id' => $access_token->id]));
+
+        $this->assertNotNull($user->oauthRefreshTokens);
+        $this->assertInstanceOf(Collection::class, $user->oauthRefreshTokens);
+        $this->assertCount(9, $user->oauthRefreshTokens);
+
+        $user->oauthRefreshTokens->each(fn($oauthRefreshToken) => $this->assertInstanceOf(OauthRefreshToken::class, $oauthRefreshToken));
+
+        $user_tokens->each(fn($oauthAccessToken) =>
+            $oauthAccessToken->refreshTokens->each( fn($refreshToken) => $this->assertTrue($user->oauthRefreshTokens->contains($refreshToken)) )
+        );
     }
 }
 

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use Laravel\Passport\Passport;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\Traits\HasRandomFactory;
 
@@ -120,5 +121,14 @@ class User extends Authenticatable {
 
     public function executions(){
         return $this->hasMany(Execution::class);
+    }
+
+    public function oauthAccessTokens(){
+        return $this->hasMany(OauthAccessToken::class);
+    }
+
+    public function oauthRefreshTokens()
+    {
+        return $this->through('oauthAccessTokens')->has('refreshTokens');
     }
 }

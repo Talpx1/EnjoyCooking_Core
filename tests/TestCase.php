@@ -13,35 +13,35 @@ abstract class TestCase extends BaseTestCase
     use CreatesApplication;
 
     public function actingAsAdmin(){
-        $this->actingAs(User::factory()->create()->assignRole(Roles::ADMIN->value));
+        return $this->actingAs(User::factory()->create()->assignRole(Roles::ADMIN->value));
     }
 
     public function actingAsModerator(){
-        $this->actingAs(User::factory()->create()->assignRole(Roles::MODERATOR->value));
+        return $this->actingAs(User::factory()->create()->assignRole(Roles::MODERATOR->value));
     }
 
     public function actingAsSuperAdmin(){
-        $this->actingAs(User::factory()->create()->assignRole(Roles::SUPER_ADMIN->value));
+        return $this->actingAs(User::factory()->create()->assignRole(Roles::SUPER_ADMIN->value));
     }
 
     public function actingAsUser(){
-        $this->actingAs(User::factory()->create()->assignRole(Roles::USER->value));
+        return $this->actingAs(User::factory()->create()->assignRole(Roles::USER->value));
     }
 
     public function actingAsApiAdmin(){
-        Passport::actingAs(User::factory()->create()->assignRole(Roles::ADMIN->value));
+        return Passport::actingAs(User::factory()->create()->assignRole(Roles::ADMIN->value));
     }
 
     public function actingAsApiModerator(){
-        Passport::actingAs(User::factory()->create()->assignRole(Roles::MODERATOR->value));
+        return Passport::actingAs(User::factory()->create()->assignRole(Roles::MODERATOR->value));
     }
 
     public function actingAsApiSuperAdmin(){
-        Passport::actingAs(User::factory()->create()->assignRole(Roles::SUPER_ADMIN->value));
+        return Passport::actingAs(User::factory()->create()->assignRole(Roles::SUPER_ADMIN->value));
     }
 
     public function actingAsApiUser(){
-        Passport::actingAs(User::factory()->create()->assignRole(Roles::USER->value));
+        return Passport::actingAs(User::factory()->create()->assignRole(Roles::USER->value));
     }
 
     public function assertUniqueConstraintFails(QueryException $e){
