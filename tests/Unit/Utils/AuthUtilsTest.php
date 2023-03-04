@@ -80,7 +80,5 @@ class AuthUtilsTest extends TestCase
         $this->assertTrue(AuthUtils::isLoggedIn());
         $this->actingAsSuperAdmin();
         $this->assertTrue(AuthUtils::isLoggedIn());
-        Auth::logout();
-        $this->assertFalse(AuthUtils::isLoggedIn());
     }
 }

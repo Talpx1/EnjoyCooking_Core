@@ -5,7 +5,7 @@ namespace App\Http\Requests\Award;
 trait AwardRequestCommon{
     private function getCommonRules(): array{
         return [
-            'price' => ['nullable', 'numeric', 'min:0']
+            'price' => ['required','numeric', 'min:0']
         ];
     }
 }

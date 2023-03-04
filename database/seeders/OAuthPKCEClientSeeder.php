@@ -21,7 +21,7 @@ class OAuthPKCEClientSeeder extends Seeder
             'secret' => null,
             'provider' => null,
             'name' => 'Enjoy_Cooking_Core PKCE Grant Client',
-            'redirect' => '',
+            'redirect' => config('passport.ec_frontend_auth_callback_url'),
             'personal_access_client' => 0,
             'password_client' => 0,
             'revoked' => 0,

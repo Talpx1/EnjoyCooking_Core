@@ -56,9 +56,9 @@ class AwardTest extends TestCase
     /**
      * @test
      */
-    public function test_price_is_nullable(){
-        Award::factory()->create(['name'=>'test', 'price'=>null]);
-        $this->assertDatabaseHas('awards', ['name'=>'test', 'price'=>null]);
+    public function test_price_is_required(){
+        $this->expectException(QueryException::class);
+        Award::factory()->create(['price'=>null]);
     }
 
     /**

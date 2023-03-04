@@ -64,5 +64,6 @@ return [
     ],
 
     'first_party_clients' => explode(',', env('FIRST_PARTY_CLIENTS_ID', '')),
+    'ec_frontend_auth_callback_url' => env('EC_FRONTEND_AUTH_CALLBACK_URL', ''),
 
 ];

@@ -13,6 +13,8 @@ class Award extends Model
     use HasFactory, HasRandomFactory;
 
     protected $guarded = ['id', 'created_at', 'updated_at'];
+    protected $appends = ['icons'];
+    protected $casts = ['price'=>'float'];
 
     public function recipes(){
         return $this->morphedByMany(Recipe::class, 'awardable');

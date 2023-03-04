@@ -263,14 +263,14 @@ class AwardControllerTest extends TestCase
     /**
      * @test
      */
-    public function test_award_price_is_nullable_on_store(){
+    public function test_award_price_is_required_on_store(){
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png'), 'price' => null]);
         unset($award['icon_path']);
 
-        $this->postJson(route('award.store'), $award)->assertCreated()->assertJsonFragment(['name' => $award['name'], 'price' => null]);
-        $this->assertDatabaseHas(Award::class, ['name' => $award['name'], 'price' => null]);
+        $this->postJson(route('award.store'), $award)->assertJsonValidationErrorFor('price');
+        $this->assertDatabaseMissing(Award::class, ['name' => $award['name'], 'price' => null]);
     }
 
     /**
@@ -572,15 +572,14 @@ class AwardControllerTest extends TestCase
     /**
      * @test
      */
-    public function test_award_price_is_nullable_on_update(){
+    public function test_award_price_is_required_on_update(){
         $this->actingAsAdmin();
 
         $award = Award::factory()->create(['name'=>'test']);
 
         $this->putJson(route('award.update', $award->id), array_merge($award->toArray(),['price' => null]))
-            ->assertOk()
-            ->assertJsonFragment(['name' => 'test', 'price' => null]);
-        $this->assertDatabaseHas(Award::class, ['name' => 'test', 'price' => null]);
+            ->assertJsonValidationErrorFor('price');
+        $this->assertDatabaseMissing(Award::class, ['name' => 'test', 'price' => null]);
     }
 
     /**
