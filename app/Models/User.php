@@ -38,6 +38,9 @@ class User extends Authenticatable {
         'two_factor_secret',
     ];
 
+    protected $with = ['roles'];
+    protected $appends = ['permissions_list'];
+
     /**
      * The attributes that should be cast.
      *
@@ -132,5 +135,9 @@ class User extends Authenticatable {
     public function oauthRefreshTokens()
     {
         return $this->through('oauthAccessTokens')->has('refreshTokens');
+    }
+
+    public function getPermissionsListAttribute(){
+        return $this->getAllPermissions()->pluck('name');
     }
 }

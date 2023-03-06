@@ -147,6 +147,7 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_name_is_required_on_store(){
+        Storage::fake('public');
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png')]);
@@ -161,6 +162,7 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_name_must_be_string_on_store(){
+        Storage::fake('public');
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['name' => 123, 'icon' => UploadedFile::fake()->image('test.png')]);
@@ -174,6 +176,7 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_name_must_be_unique_on_store(){
+        Storage::fake('public');
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['name' => 'test', 'icon' => UploadedFile::fake()->image('test.png')]);
@@ -203,6 +206,7 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_must_be_image_on_store(){
+        Storage::fake('public');
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['icon' => UploadedFile::fake()->create('test.pdf')]);
@@ -222,6 +226,7 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_must_have_valid_mime_type_on_store(){
+        Storage::fake('public');
         $this->actingAsAdmin();
 
         Config::set('upload.award.accepted_file_types', 'png,jpg');
@@ -243,6 +248,7 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_must_have_valid_file_size_on_store(){
+        Storage::fake('public');
         $this->actingAsAdmin();
 
         Config::set('upload.award.accepted_file_types', 'png,jpg');
@@ -264,6 +270,7 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_price_is_required_on_store(){
+        Storage::fake('public');
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png'), 'price' => null]);
@@ -277,6 +284,7 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_price_must_be_numeric_on_store(){
+        Storage::fake('public');
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['price' => 'aaa', 'icon' => UploadedFile::fake()->image('test.png')]);
@@ -296,6 +304,7 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_price_minimum_value_is_0_on_store(){
+        Storage::fake('public');
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['price' => -1, 'icon' => UploadedFile::fake()->image('test.png')]);
@@ -329,12 +338,12 @@ class AwardControllerTest extends TestCase
 
         $award = Award::factory()->create();
 
-        $this->putJson(route('award.update', $award->id), ['name' => 'test'])->assertOk()->assertJsonFragment(['name' => 'test']);
+        $this->putJson(route('award.update', $award->id), ['name' => 'test', 'price'=>1])->assertOk()->assertJsonFragment(['name' => 'test', 'price'=>1]);
         $this->assertDatabaseHas(Award::class, ['name' => 'test']);
 
         $this->actingAsUser();
 
-        $this->putJson(route('award.update', $award->id), ['name' => 'test2'])->assertForbidden();
+        $this->putJson(route('award.update', $award->id), ['name' => 'test2', 'price'=>2])->assertForbidden();
         $this->assertDatabaseMissing(Award::class, ['name' => 'test2']);
     }
 
@@ -352,6 +361,7 @@ class AwardControllerTest extends TestCase
         $this->putJson(route('award.update', $award->id), [
             'icon' => UploadedFile::fake()->image('test.png')->size(1000)->mimeType(MimeType::get('png')),
             'name' => 'test',
+            'price'=>1
         ])->assertOk()->assertJsonFragment(['name' => 'test']);
 
         $this->assertNotEquals($award->fresh()->icon_path, $old_icon_path);
@@ -452,6 +462,7 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_name_is_required_on_update(){
+        Storage::fake('public');
         $this->actingAsAdmin();
 
         $award = Award::factory()->create();
@@ -507,6 +518,7 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_must_be_image_on_update(){
+        Storage::fake('public');
         $this->actingAsAdmin();
 
         $award = Award::factory()->create(['name'=>'test', 'icon_path'=>'test/123/']);
@@ -529,6 +541,7 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_must_have_valid_mime_type_on_update(){
+        Storage::fake('public');
         $this->actingAsAdmin();
 
         Config::set('upload.award.accepted_file_types', 'png,jpg');
@@ -552,6 +565,7 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_must_have_valid_file_size_on_update(){
+        Storage::fake('public');
         $this->actingAsAdmin();
 
         $award = Award::factory()->create(['name'=>'test', 'icon_path'=>'test/123/']);

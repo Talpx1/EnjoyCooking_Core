@@ -8,6 +8,6 @@ return[
         'save_width' => 200,
         'save_height' => 200,
         'save_as' => 'png',
-        'save_path' => '/awards/'
+        'save_path' => '/awards/',
     ]
 ];

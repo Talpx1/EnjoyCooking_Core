@@ -13,19 +13,27 @@ abstract class TestCase extends BaseTestCase
     use CreatesApplication;
 
     public function actingAsAdmin(){
-        return $this->actingAs(User::factory()->create()->assignRole(Roles::ADMIN->value));
+        $user = User::factory()->create()->assignRole(Roles::ADMIN->value);
+        $this->actingAs($user);
+        return $user;
     }
 
     public function actingAsModerator(){
-        return $this->actingAs(User::factory()->create()->assignRole(Roles::MODERATOR->value));
+        $user = User::factory()->create()->assignRole(Roles::MODERATOR->value);
+        $this->actingAs($user);
+        return $user;
     }
 
     public function actingAsSuperAdmin(){
-        return $this->actingAs(User::factory()->create()->assignRole(Roles::SUPER_ADMIN->value));
+        $user = User::factory()->create()->assignRole(Roles::SUPER_ADMIN->value);
+        $this->actingAs($user);
+        return $user;
     }
 
     public function actingAsUser(){
-        return $this->actingAs(User::factory()->create()->assignRole(Roles::USER->value));
+        $user = User::factory()->create()->assignRole(Roles::USER->value);
+        $this->actingAs($user);
+        return $user;
     }
 
     public function actingAsApiAdmin(){

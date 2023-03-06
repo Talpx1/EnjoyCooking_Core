@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Enums\Permissions;
 use App\Models\Award;
 use App\Models\Awardable;
 use App\Models\Execution;
@@ -15,6 +16,7 @@ use App\Models\OauthRefreshToken;
 use App\Models\Rating;
 use App\Models\Snack;
 use Laravel\Passport\Passport;
+use Tests\Seeders\PermissionsAndRolesSeeder;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use App\Models\User;
@@ -602,6 +604,25 @@ class UserTest extends TestCase
         $user_tokens->each(fn($oauthAccessToken) =>
             $oauthAccessToken->refreshTokens->each( fn($refreshToken) => $this->assertTrue($user->oauthRefreshTokens->contains($refreshToken)) )
         );
+    }
+
+    /**
+     * @test
+     */
+    public function test_permissions_list_attribute(){
+        $this->seed(PermissionsAndRolesSeeder::class);
+
+        $user = $this->actingAsUser();
+
+        $this->assertNotEmpty($user->permissions_list);
+        $this->assertContains(Permissions::INDEX_AWARD->value, $user->permissions_list);
+        $this->assertNotContains(Permissions::DESTROY_AWARD->value, $user->permissions_list);
+
+        $user = $this->actingAsAdmin();
+        $this->assertNotEmpty($user->permissions_list);
+        $this->assertContains(Permissions::INDEX_AWARD->value, $user->permissions_list);
+        $this->assertContains(Permissions::DESTROY_AWARD->value, $user->permissions_list);
+
     }
 }
 
