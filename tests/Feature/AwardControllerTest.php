@@ -9,6 +9,7 @@ use Illuminate\Http\Testing\MimeType;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Intervention\Image\Facades\Image;
 use Tests\Seeders\PermissionsAndRolesSeeder;
@@ -170,6 +171,28 @@ class AwardControllerTest extends TestCase
 
         $this->postJson(route('award.store'), $award)->assertJsonValidationErrorFor('name');
         $this->assertDatabaseMissing(Award::class, ['name' => 123, 'price' => $award['price']]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_award_name_must_be_max_255_chars_on_store(){
+        Storage::fake('public');
+        $this->actingAsAdmin();
+        $nameErr = Str::random(256);
+        $nameOk = Str::random(255);
+
+        $award = Award::factory()->raw(['name' => $nameErr, 'icon' => UploadedFile::fake()->image('test.png')]);
+        unset($award['icon_path']);
+
+        $this->postJson(route('award.store'), $award)->assertJsonValidationErrorFor('name');
+        $this->assertDatabaseMissing(Award::class, ['name' => $nameErr, 'price' => $award['price']]);
+
+        $award = Award::factory()->raw(['name' => $nameOk, 'icon' => UploadedFile::fake()->image('test.png')]);
+        unset($award['icon_path']);
+
+        $this->postJson(route('award.store'), $award)->assertCreated();
+        $this->assertDatabaseHas(Award::class, ['name' => $nameOk, 'price' => $award['price']]);
     }
 
     /**
@@ -472,6 +495,25 @@ class AwardControllerTest extends TestCase
 
         $this->putJson(route('award.update', $award->id), $data)->assertJsonValidationErrorFor('name');
         $this->assertDatabaseMissing(Award::class, ['name' => null, 'price' => $data['price']]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_award_name_must_be_max_255_chars_on_update(){
+        Storage::fake('public');
+        $this->actingAsAdmin();
+
+        $dataErr = Award::factory()->raw(['name' => Str::random(256), 'icon' => UploadedFile::fake()->image('test.png')]);
+        $dataOk = Award::factory()->raw(['name' => Str::random(255), 'icon' => UploadedFile::fake()->image('test.png')]);
+
+        $award = Award::factory()->create();
+
+        $this->putJson(route('award.update', $award->id), $dataErr)->assertJsonValidationErrorFor('name');
+        $this->assertDatabaseMissing(Award::class, ['name' => $dataErr['name'], 'price' => $dataErr['price']]);
+
+        $this->putJson(route('award.update', $award->id), $dataOk)->assertOk();
+        $this->assertDatabaseHas(Award::class, ['name' => $dataOk['name'], 'price' => $dataOk['price']]);
     }
 
     /**

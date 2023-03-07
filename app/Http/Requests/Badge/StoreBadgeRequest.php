@@ -28,7 +28,7 @@ class StoreBadgeRequest extends FormRequest
     public function rules()
     {
         return array_merge(self::getCommonRules(), [
-            'title' => ['required', 'string', 'unique:badges,title'],
+            'title' => ['required', 'string', 'unique:badges,title', 'max:255'],
         ]);
     }
 }

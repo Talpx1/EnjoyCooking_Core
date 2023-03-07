@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Badge;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
+use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\Seeders\PermissionsAndRolesSeeder;
 use Tests\TestCase;
@@ -99,6 +100,25 @@ class BadgeControllerTest extends TestCase
     /**
      * @test
      */
+    public function test_title_must_be_max_255_chars_on_store(){
+        $this->actingAsAdmin();
+        $nameErr = Str::random(256);
+        $nameOk = Str::random(255);
+
+        $badge = Badge::factory()->raw(['title' => $nameErr]);
+
+        $this->postJson(route('badge.store'), $badge)->assertJsonValidationErrorFor('title');
+        $this->assertDatabaseMissing(Badge::class, ['title' => $nameErr, 'description' => $badge['description']]);
+
+        $badge = Badge::factory()->raw(['title' => $nameOk]);
+
+        $this->postJson(route('badge.store'), $badge)->assertCreated();
+        $this->assertDatabaseHas(Badge::class, ['title' => $nameOk, 'description' => $badge['description']]);
+    }
+
+    /**
+     * @test
+     */
     public function test_badge_title_must_be_unique_on_store(){
 
         $this->actingAsAdmin();
@@ -142,6 +162,25 @@ class BadgeControllerTest extends TestCase
     /**
      * @test
      */
+    public function test_description_must_be_max_255_chars_on_store(){
+        $this->actingAsAdmin();
+        $nameErr = Str::random(256);
+        $nameOk = Str::random(255);
+
+        $badge = Badge::factory()->raw(['description' => $nameErr]);
+
+        $this->postJson(route('badge.store'), $badge)->assertJsonValidationErrorFor('description');
+        $this->assertDatabaseMissing(Badge::class, ['description' => $nameErr, 'title' => $badge['title']]);
+
+        $badge = Badge::factory()->raw(['description' => $nameOk]);
+
+        $this->postJson(route('badge.store'), $badge)->assertCreated();
+        $this->assertDatabaseHas(Badge::class, ['description' => $nameOk, 'title' => $badge['title']]);
+    }
+
+    /**
+     * @test
+     */
     public function test_everyone_can_show_badge(){
         $badge = Badge::factory()->create();
 
@@ -179,6 +218,24 @@ class BadgeControllerTest extends TestCase
 
         $this->putJson(route('badge.update', $badge->id), $data)->assertJsonValidationErrorFor('title');
         $this->assertDatabaseMissing(Badge::class, ['title' => null, 'description' => $data['description']]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_title_must_be_max_255_chars_on_update(){
+        $this->actingAsAdmin();
+
+        $dataErr = Badge::factory()->raw(['title' => Str::random(256)]);
+        $dataOk = Badge::factory()->raw(['title' => Str::random(255)]);
+
+        $badge = Badge::factory()->create();
+
+        $this->putJson(route('badge.update', $badge->id), $dataErr)->assertJsonValidationErrorFor('title');
+        $this->assertDatabaseMissing(Badge::class, ['title' => $dataErr['title'], 'description' => $dataErr['description']]);
+
+        $this->putJson(route('badge.update', $badge->id), $dataOk)->assertOk();
+        $this->assertDatabaseHas(Badge::class, ['title' => $dataOk['title'], 'description' => $dataOk['description']]);
     }
 
     /**
@@ -233,6 +290,24 @@ class BadgeControllerTest extends TestCase
 
         $this->putJson(route('badge.update', $badge->id), array_merge($badge->toArray(),['description' => 'aaa']))->assertOk()->assertJsonFragment(['title' => $badge->title, 'description' => 'aaa']);
         $this->assertDatabaseHas(Badge::class, ['title' => $badge->title, 'description' => 'aaa']);
+    }
+
+    /**
+     * @test
+     */
+    public function test_description_must_be_max_255_chars_on_update(){
+        $this->actingAsAdmin();
+
+        $dataErr = Badge::factory()->raw(['description' => Str::random(256)]);
+        $dataOk = Badge::factory()->raw(['description' => Str::random(255)]);
+
+        $badge = Badge::factory()->create();
+
+        $this->putJson(route('badge.update', $badge->id), $dataErr)->assertJsonValidationErrorFor('description');
+        $this->assertDatabaseMissing(Badge::class, ['description' => $dataErr['description'], 'title' => $dataErr['title']]);
+
+        $this->putJson(route('badge.update', $badge->id), $dataOk)->assertOk();
+        $this->assertDatabaseHas(Badge::class, ['description' => $dataOk['description'], 'title' => $dataOk['title']]);
     }
 
     /**

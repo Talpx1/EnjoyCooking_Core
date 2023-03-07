@@ -27,7 +27,7 @@ class UpdateBadgeRequest extends FormRequest
     public function rules()
     {
         return array_merge(self::getCommonRules(), [
-            'title' => ['required', 'string', 'unique:badges,title,'.$this->badge->id],
+            'title' => ['required', 'string', 'unique:badges,title,'.$this->badge->id, 'max:255'],
         ]);
     }
 }
