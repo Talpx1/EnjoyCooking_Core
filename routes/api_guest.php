@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AwardController;
+use App\Http\Controllers\BadgeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -9,5 +10,6 @@ use Illuminate\Support\Facades\Route;
 // #############################################################
 
 Route::apiResources([
-    'award' => AwardController::class
+    'award' => AwardController::class,
+    'badge' => BadgeController::class
 ], ['only' => ['index', 'show']]);
