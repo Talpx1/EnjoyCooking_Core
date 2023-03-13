@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Traits\HasRandomFactory;
@@ -25,7 +26,7 @@ class Category extends Model
         return $this->belongsTo(Category::class, 'parent_category_id');
     }
 
-    public function children(){
+    public function subcategories(){
         return $this->hasMany(Category::class, 'parent_category_id');
     }
 
@@ -36,5 +37,11 @@ class Category extends Model
     public function recipes()
     {
         return $this->hasMany(Recipe::class);
+    }
+
+    public function scopeWhereNameLike(Builder $query, string|null $name){
+        if(empty($name)) return $query;
+
+        $query->where('name', 'like', "%{$name}%");
     }
 }

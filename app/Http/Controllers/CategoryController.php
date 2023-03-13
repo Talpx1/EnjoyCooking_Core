@@ -16,8 +16,8 @@ class CategoryController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index(){
-        return response()->json(Category::paginate());
+    public function index(Request $request){
+        return response()->json(Category::whereNameLike($request?->search)->paginate());
     }
 
     /**
@@ -75,5 +75,21 @@ class CategoryController extends Controller
         $category->delete();
 
         return response()->json(status:200);
+    }
+
+    /**
+     *
+     * @param  \App\Models\Category  $category
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function subcategories(Category $category){
+        return response()->json($category->subcategories()->paginate());
+    }
+
+    /**
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function firstLevel(){
+        return response()->json(Category::where('parent_category_id', null)->paginate());
     }
 }

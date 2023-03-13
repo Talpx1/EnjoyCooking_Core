@@ -84,11 +84,11 @@ class CategoryTest extends TestCase
     /**
      * @test
      */
-    public function test_children_categories_get_deleted_if_parent_category_gets_deleted(){
+    public function test_subcategories_get_deleted_if_parent_category_gets_deleted(){
         $category = Category::factory()->create(['name' => 'test']);
-        $child_category_1 = Category::factory()->create(['name' => 'test 1', 'parent_category_id' => $category->id]);
-        $child_category_2 = Category::factory()->create(['name' => 'test 2', 'parent_category_id' => $category->id]);
-        $child_category_3 = Category::factory()->create(['name' => 'test 3', 'parent_category_id' => $category->id]);
+        $subcategory_1 = Category::factory()->create(['name' => 'test 1', 'parent_category_id' => $category->id]);
+        $subcategory_2 = Category::factory()->create(['name' => 'test 2', 'parent_category_id' => $category->id]);
+        $subcategory_3 = Category::factory()->create(['name' => 'test 3', 'parent_category_id' => $category->id]);
         $this->assertDatabaseHas('categories', ['name'=>'test', 'parent_category_id'=>null]);
         $this->assertDatabaseHas('categories', ['name'=>'test 1', 'parent_category_id'=>$category->id]);
         $this->assertDatabaseHas('categories', ['name'=>'test 2', 'parent_category_id'=>$category->id]);
@@ -102,21 +102,21 @@ class CategoryTest extends TestCase
         $this->assertDatabaseMissing('categories', ['name'=>'test 3', 'parent_category_id'=>$category->id]);
 
         $this->assertModelMissing($category);
-        $this->assertModelMissing($child_category_1);
-        $this->assertModelMissing($child_category_2);
-        $this->assertModelMissing($child_category_3);
+        $this->assertModelMissing($subcategory_1);
+        $this->assertModelMissing($subcategory_2);
+        $this->assertModelMissing($subcategory_3);
     }
 
     /**
      * @test
      */
-    public function test_category_has_children_categories(){
+    public function test_category_has_subcategories(){
         $category = Category::factory()->create();
-        $children = Category::factory(3)->create(['parent_category_id' => $category->id]);
-        $this->assertCount(3, $category->children);
-        $children->each(fn($child) => $this->assertInstanceOf(Category::class, $child));
-        $children->each(fn($child) => $this->assertTrue($category->children->contains($child)));
-        $children->each(fn($child) => $this->assertEmpty($child->children));
+        $subcategories = Category::factory(3)->create(['parent_category_id' => $category->id]);
+        $this->assertCount(3, $category->subcategories);
+        $subcategories->each(fn($child) => $this->assertInstanceOf(Category::class, $child));
+        $subcategories->each(fn($child) => $this->assertTrue($category->subcategories->contains($child)));
+        $subcategories->each(fn($child) => $this->assertEmpty($child->subcategories));
     }
 
     /**
@@ -167,5 +167,23 @@ class CategoryTest extends TestCase
 
         $other_category->recipes->each(fn($recipe) => $this->assertTrue($other_recipes->contains($recipe)));
         $other_category->recipes->each(fn($recipe) => $this->assertFalse($recipes->contains($recipe)));
+    }
+
+    public function test_where_name_like_scope(){
+        Category::factory()->create(['name' => 'test']);
+        Category::factory()->create(['name' => 'test1']);
+        Category::factory()->create(['name' => 'test2']);
+        Category::factory()->create(['name' => 'other']);
+        Category::factory()->create(['name' => 'other1']);
+        Category::factory()->create(['name' => 'name_example']);
+
+        Category::factory(30)->create();
+
+        $this->assertCount(3, Category::whereNameLike('test')->get());
+        $this->assertCount(2, Category::whereNameLike('other')->get());
+        $this->assertCount(1, Category::whereNameLike('name_example')->get());
+        $this->assertCount(2, Category::whereNameLike('1')->get());
+
+        $this->assertCount(36, Category::whereNameLike(null)->get());
     }
 }
