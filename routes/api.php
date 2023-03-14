@@ -3,6 +3,7 @@
 use App\Http\Controllers\AwardController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserOauthAccessTokenController;
 use Illuminate\Http\Request;
@@ -26,5 +27,6 @@ Route::apiResources([
     'award' => AwardController::class,
     'badge' => BadgeController::class,
     'category' => CategoryController::class,
+    'course' => CourseController::class,
 ], ['except' => ['index', 'show']]);
 

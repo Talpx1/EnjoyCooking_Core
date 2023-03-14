@@ -26,7 +26,6 @@ class UpdateCategoryRequest extends FormRequest{
     public function rules(){
         return array_merge(self::getCommonRules(), [
             'name' => ['required', 'string', 'unique:categories,name,'.$this->category->id, 'max:255'],
-            // 'slug' => ['nullable', 'string', 'unique:categories,slug,'.$this->category->id, 'max:255'],
         ]);
     }
 }

@@ -13,6 +13,7 @@ class Category extends Model
     use HasFactory, HasRandomFactory, Sluggable;
 
     protected $guarded = ['id', 'created_at', 'updated_at', 'slug'];
+    protected $with = ['parent'];
 
     public function sluggable(): array{
         return [
