@@ -131,6 +131,14 @@ enum Permissions: string {
     case STORE_EXECUTION_VIDEO = "store_execution_video";
     case DESTROY_EXECUTION_VIDEO = "destroy_execution_video";
         //user
+    case CREATE_USER = "create_user";
+    case STORE_USER = "store_user";
+    case SHOW_USER = "show_user";
+    case EDIT_USER = "edit_user";
+    case INDEX_USER = "index_user";
+    case UPDATE_USER = "update_user";
+    case DESTROY_USER = "destroy_user";
+    case LOGIN = "login";
     case BAN_USER = "ban_user";
     case FORGIVE_USER = "forgive_user";
 }

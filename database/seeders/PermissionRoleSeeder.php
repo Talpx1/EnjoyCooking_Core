@@ -19,9 +19,6 @@ class PermissionRoleSeeder extends Seeder {
      * @return void
      */
     public function run() {
-
-
-
         $everyonePermissions = [
             Permissions::INDEX_RECIPE->value,
             Permissions::INDEX_INGREDIENT->value,
@@ -41,6 +38,8 @@ class PermissionRoleSeeder extends Seeder {
             Permissions::SHOW_COURSE->value,
             Permissions::SHOW_DIFFICULTY_LEVEL->value,
             Permissions::SHOW_SNACK->value,
+            Permissions::CREATE_USER->value,
+            Permissions::STORE_USER->value,
         ];
 
         $userPermissions = array_merge($everyonePermissions, [
@@ -85,6 +84,11 @@ class PermissionRoleSeeder extends Seeder {
             Permissions::DESTROY_EXECUTION_IMAGE->value,
             Permissions::STORE_EXECUTION_VIDEO->value,
             Permissions::DESTROY_EXECUTION_VIDEO->value,
+            Permissions::SHOW_USER->value,
+            Permissions::EDIT_USER->value,
+            Permissions::UPDATE_USER->value,
+            Permissions::DESTROY_USER->value,
+            Permissions::LOGIN->value
         ]);
 
         $moderatorPermissions = array_merge($everyonePermissions, [
@@ -137,6 +141,7 @@ class PermissionRoleSeeder extends Seeder {
             Permissions::UPDATE_AWARD->value,
             Permissions::DESTROY_AWARD->value,
             Permissions::ASSIGN_BADGE->value,
+            Permissions::INDEX_USER->value,
         ]);
 
         Role::findByName(Roles::ADMIN->value)->givePermissionTo($adminPermissions);

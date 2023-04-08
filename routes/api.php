@@ -4,6 +4,7 @@ use App\Http\Controllers\AwardController;
 use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
+use App\Http\Controllers\DifficultyLevelController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserOauthAccessTokenController;
 use Illuminate\Support\Facades\Route;
@@ -27,5 +28,6 @@ Route::apiResources([
     'badge' => BadgeController::class,
     'category' => CategoryController::class,
     'course' => CourseController::class,
+    'difficulty_level' => DifficultyLevelController::class,
 ], ['except' => ['index', 'show']]);
 
