@@ -26,6 +26,7 @@ return new class extends Migration
             $table->date('date_of_birth');
             $table->string('instagram_url')->nullable();
             $table->string('website_url')->nullable();
+            $table->string('image_path')->nullable()->unique();
             $table->foreignIdFor(ProfessionGroup::class)->nullable()->constrained()->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(Gender::class)->nullable()->constrained()->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(UserType::class)->constrained()->restrictOnDelete()->cascadeOnUpdate();

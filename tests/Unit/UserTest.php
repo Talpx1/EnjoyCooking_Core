@@ -3,8 +3,6 @@
 namespace Tests\Unit;
 
 use App\Enums\Permissions;
-use App\Models\Award;
-use App\Models\Awardable;
 use App\Models\Execution;
 use App\Models\Favorite;
 use App\Models\Follow;
@@ -15,7 +13,6 @@ use App\Models\OauthAccessToken;
 use App\Models\OauthRefreshToken;
 use App\Models\Rating;
 use App\Models\Snack;
-use Laravel\Passport\Passport;
 use Tests\Seeders\PermissionsAndRolesSeeder;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -132,8 +129,8 @@ class UserTest extends TestCase
      * @test
      */
     public function test_company_name_is_nullable(){
-        User::factory()->create(['company_name' => 'test 123']);
-        $this->assertDatabaseHas('users', ['company_name'=>'test 123']);
+        User::factory()->create(['first_name' => 'test 123', 'company_name'=>null]);
+        $this->assertDatabaseHas('users', ['first_name'=>'test 123', 'company_name'=>null]);
     }
 
     /**
@@ -190,6 +187,7 @@ class UserTest extends TestCase
         User::factory()->create(['first_name' => 'test 567', 'user_type_id' => 111]);
         $this->assertDatabaseMissing('users', ['first_name'=>'test 567', 'user_type_id'=>111]);
     }
+
     /**
      * @test
      */
@@ -236,6 +234,14 @@ class UserTest extends TestCase
     public function test_website_url_is_nullable(){
         User::factory()->create(['first_name' => 'test 123', 'website_url'=>null]);
         $this->assertDatabaseHas('users', ['first_name'=>'test 123', 'website_url'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_image_path_is_nullable(){
+        User::factory()->create(['first_name' => 'test 123', 'image_path'=>null]);
+        $this->assertDatabaseHas('users', ['first_name'=>'test 123', 'image_path'=>null]);
     }
 
     /**

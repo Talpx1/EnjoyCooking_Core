@@ -60,7 +60,9 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_authorized_user_can_store_award(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png')->size(1000)->mimeType(MimeType::get('png'))]);
@@ -80,7 +82,9 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_gets_saved_on_store(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png')->size(1000)->mimeType(MimeType::get('png'))]);
@@ -91,14 +95,16 @@ class AwardControllerTest extends TestCase
         $award = Award::latest()->first();
 
         $this->assertNotNull($award->icon_path);
-        foreach(explode(',', config('upload.award.save_as')) as $format) Storage::disk('public')->assertExists($award->icon_path.".{$format}");
+        foreach(explode(',', config('upload.award.save_as')) as $format) Storage::disk($disk)->assertExists($award->icon_path.".{$format}");
     }
 
     /**
      * @test
      */
     public function test_award_icon_gets_resized_on_store(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
         $this->actingAsAdmin();
 
         //width and height get resized equally
@@ -111,8 +117,8 @@ class AwardControllerTest extends TestCase
         $this->assertNotNull($award->icon_path);
 
         foreach(explode(',', config('upload.award.save_as')) as $format){
-            $this->assertTrue(Image::make(Storage::disk('public')->get($award->icon_path.".{$format}"))->width() == config('upload.award.save_width'));
-            $this->assertTrue(Image::make(Storage::disk('public')->get($award->icon_path.".{$format}"))->height() == config('upload.award.save_height'));
+            $this->assertTrue(Image::make(Storage::disk($disk)->get($award->icon_path.".{$format}"))->width() == config('upload.award.save_width'));
+            $this->assertTrue(Image::make(Storage::disk($disk)->get($award->icon_path.".{$format}"))->height() == config('upload.award.save_height'));
         }
 
         //TODO: test with other sizing
@@ -122,11 +128,12 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_gets_saved_in_multiple_formats_on_store(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
         $this->actingAsAdmin();
 
         //editing config value
-        Config::set('upload.award.save_as', 'png,jpeg,webp');
+        Config::set('upload.award.save_as', ['png','jpeg','webp']);
 
         $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png', config('upload.award.save_width'), config('upload.award.save_height'))->size(1000)->mimeType(MimeType::get('png'))]);
         unset($award['icon_path']);
@@ -136,19 +143,21 @@ class AwardControllerTest extends TestCase
         $award = Award::latest()->first();
         $this->assertNotNull($award->icon_path);
 
-        Storage::disk('public')->assertExists($award->icon_path.".jpeg");
-        Storage::disk('public')->assertExists($award->icon_path.".jpeg");
-        Storage::disk('public')->assertExists($award->icon_path.".png");
-        Storage::disk('public')->assertExists($award->icon_path.".png");
-        Storage::disk('public')->assertExists($award->icon_path.".webp");
-        Storage::disk('public')->assertExists($award->icon_path.".webp");
+        Storage::disk($disk)->assertExists($award->icon_path.".jpeg");
+        Storage::disk($disk)->assertExists($award->icon_path.".jpeg");
+        Storage::disk($disk)->assertExists($award->icon_path.".png");
+        Storage::disk($disk)->assertExists($award->icon_path.".png");
+        Storage::disk($disk)->assertExists($award->icon_path.".webp");
+        Storage::disk($disk)->assertExists($award->icon_path.".webp");
     }
 
     /**
      * @test
      */
     public function test_award_name_is_required_on_store(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png')]);
@@ -163,7 +172,9 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_name_must_be_string_on_store(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['name' => 123, 'icon' => UploadedFile::fake()->image('test.png')]);
@@ -177,8 +188,12 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_name_must_be_max_255_chars_on_store(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
+
         $nameErr = Str::random(256);
         $nameOk = Str::random(255);
 
@@ -199,7 +214,10 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_name_must_be_unique_on_store(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['name' => 'test', 'icon' => UploadedFile::fake()->image('test.png')]);
@@ -229,7 +247,10 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_must_be_image_on_store(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['icon' => UploadedFile::fake()->create('test.pdf')]);
@@ -249,7 +270,10 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_must_have_valid_mime_type_on_store(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
 
         Config::set('upload.award.accepted_file_types', 'png,jpg');
@@ -271,7 +295,10 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_must_have_valid_file_size_on_store(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
 
         Config::set('upload.award.accepted_file_types', 'png,jpg');
@@ -293,7 +320,10 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_price_is_required_on_store(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png'), 'price' => null]);
@@ -307,7 +337,10 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_price_must_be_numeric_on_store(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['price' => 'aaa', 'icon' => UploadedFile::fake()->image('test.png')]);
@@ -327,7 +360,10 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_price_minimum_value_is_0_on_store(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['price' => -1, 'icon' => UploadedFile::fake()->image('test.png')]);
@@ -375,7 +411,10 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_gets_saved_on_update(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
 
         $award = Award::factory()->create();
@@ -389,15 +428,18 @@ class AwardControllerTest extends TestCase
 
         $this->assertNotEquals($award->fresh()->icon_path, $old_icon_path);
         $this->assertNotNull($award->fresh()->icon_path);
-        foreach(explode(',', config('upload.award.save_as')) as $format) Storage::disk('public')->assertExists($award->fresh()->icon_path.".{$format}");
+        foreach(explode(',', config('upload.award.save_as')) as $format) Storage::disk($disk)->assertExists($award->fresh()->icon_path.".{$format}");
     }
 
     /**
      * @test
      */
     public function test_award_icons_get_deleted_when_new_one_is_uploaded(){
-        Storage::fake('public');
-        Config::set('upload.award.save_as', 'jpeg,png,webp');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
+        Config::set('upload.award.save_as', ['jpeg','png','webp']);
         $this->actingAsAdmin();
 
         $award = Award::factory()->raw(['name'=>'test', 'icon' => UploadedFile::fake()->image('test.png')->size(1000)->mimeType(MimeType::get('png'))]);
@@ -408,9 +450,9 @@ class AwardControllerTest extends TestCase
         $award = Award::latest()->first();
 
         $this->assertNotNull($award->icon_path);
-        Storage::disk('public')->assertExists($award->icon_path.".jpeg");
-        Storage::disk('public')->assertExists($award->icon_path.".png");
-        Storage::disk('public')->assertExists($award->icon_path.".webp");
+        Storage::disk($disk)->assertExists($award->icon_path.".jpeg");
+        Storage::disk($disk)->assertExists($award->icon_path.".png");
+        Storage::disk($disk)->assertExists($award->icon_path.".webp");
 
         $old_icon_path = $award->icon_path;
 
@@ -421,26 +463,29 @@ class AwardControllerTest extends TestCase
         $this->assertNotEquals($award->fresh()->icon_path, $old_icon_path);
         $this->assertNotNull($award->fresh()->icon_path);
 
-        Storage::disk('public')->assertExists($award->fresh()->icon_path.".jpeg");
-        Storage::disk('public')->assertExists($award->fresh()->icon_path.".png");
-        Storage::disk('public')->assertExists($award->fresh()->icon_path.".webp");
+        Storage::disk($disk)->assertExists($award->fresh()->icon_path.".jpeg");
+        Storage::disk($disk)->assertExists($award->fresh()->icon_path.".png");
+        Storage::disk($disk)->assertExists($award->fresh()->icon_path.".webp");
 
-        Storage::disk('public')->assertMissing($old_icon_path.".jpeg");
-        Storage::disk('public')->assertMissing($old_icon_path.".png");
-        Storage::disk('public')->assertMissing($old_icon_path.".webp");
+        Storage::disk($disk)->assertMissing($old_icon_path.".jpeg");
+        Storage::disk($disk)->assertMissing($old_icon_path.".png");
+        Storage::disk($disk)->assertMissing($old_icon_path.".webp");
     }
 
     /**
      * @test
      */
     public function test_award_icon_gets_resized_on_update(){
-        Storage::fake('public');
-        Config::set('upload.award.save_as', 'jpeg,png,webp');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
+        Config::set('upload.award.save_as', ['jpeg','png','webp']);
+
         $this->actingAsAdmin();
 
         //width and height get resized equally
         $award = Award::factory()->create(['name' => 'test']);
-        unset($award['icon_path']);
 
         $this->putJson(route('award.update', $award->id), array_merge($award->toArray(),[
             'icon' => UploadedFile::fake()->image('test.png', config('upload.award.save_width')+5, config('upload.award.save_height')+5)->size(1000)->mimeType(MimeType::get('png'))
@@ -448,12 +493,12 @@ class AwardControllerTest extends TestCase
 
         $this->assertNotNull($award->fresh()->icon_path);
 
-        $this->assertTrue(Image::make(Storage::disk('public')->get($award->fresh()->icon_path.".jpeg"))->width() == config('upload.award.save_width'));
-        $this->assertTrue(Image::make(Storage::disk('public')->get($award->fresh()->icon_path.".jpeg"))->height() == config('upload.award.save_height'));
-        $this->assertTrue(Image::make(Storage::disk('public')->get($award->fresh()->icon_path.".png"))->width() == config('upload.award.save_width'));
-        $this->assertTrue(Image::make(Storage::disk('public')->get($award->fresh()->icon_path.".png"))->height() == config('upload.award.save_height'));
-        $this->assertTrue(Image::make(Storage::disk('public')->get($award->fresh()->icon_path.".webp"))->width() == config('upload.award.save_width'));
-        $this->assertTrue(Image::make(Storage::disk('public')->get($award->fresh()->icon_path.".webp"))->height() == config('upload.award.save_height'));
+        $this->assertTrue(Image::make(Storage::disk($disk)->get($award->fresh()->icon_path.".jpeg"))->width() == config('upload.award.save_width'));
+        $this->assertTrue(Image::make(Storage::disk($disk)->get($award->fresh()->icon_path.".jpeg"))->height() == config('upload.award.save_height'));
+        $this->assertTrue(Image::make(Storage::disk($disk)->get($award->fresh()->icon_path.".png"))->width() == config('upload.award.save_width'));
+        $this->assertTrue(Image::make(Storage::disk($disk)->get($award->fresh()->icon_path.".png"))->height() == config('upload.award.save_height'));
+        $this->assertTrue(Image::make(Storage::disk($disk)->get($award->fresh()->icon_path.".webp"))->width() == config('upload.award.save_width'));
+        $this->assertTrue(Image::make(Storage::disk($disk)->get($award->fresh()->icon_path.".webp"))->height() == config('upload.award.save_height'));
 
         //TODO: test with other sizing
     }
@@ -462,11 +507,14 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_gets_saved_in_multiple_formats_on_update(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
 
         //editing config value
-        Config::set('upload.award.save_as', 'png,jpeg,webp');
+        Config::set('upload.award.save_as', ['png','jpeg','webp']);
 
         $award = Award::factory()->create(['name' => 'test']);
 
@@ -476,16 +524,19 @@ class AwardControllerTest extends TestCase
 
         $this->assertNotNull($award->fresh()->icon_path);
 
-        Storage::disk('public')->assertExists($award->fresh()->icon_path.".jpeg");
-        Storage::disk('public')->assertExists($award->fresh()->icon_path.".png");
-        Storage::disk('public')->assertExists($award->fresh()->icon_path.".webp");
+        Storage::disk($disk)->assertExists($award->fresh()->icon_path.".jpeg");
+        Storage::disk($disk)->assertExists($award->fresh()->icon_path.".png");
+        Storage::disk($disk)->assertExists($award->fresh()->icon_path.".webp");
     }
 
     /**
      * @test
      */
     public function test_award_name_is_required_on_update(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
 
         $award = Award::factory()->create();
@@ -501,7 +552,10 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_name_must_be_max_255_chars_on_update(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
 
         $dataErr = Award::factory()->raw(['name' => Str::random(256), 'icon' => UploadedFile::fake()->image('test.png')]);
@@ -560,7 +614,10 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_must_be_image_on_update(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
 
         $award = Award::factory()->create(['name'=>'test', 'icon_path'=>'test/123/']);
@@ -583,7 +640,10 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_must_have_valid_mime_type_on_update(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
 
         Config::set('upload.award.accepted_file_types', 'png,jpg');
@@ -607,7 +667,10 @@ class AwardControllerTest extends TestCase
      * @test
      */
     public function test_award_icon_must_have_valid_file_size_on_update(){
-        Storage::fake('public');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
         $this->actingAsAdmin();
 
         $award = Award::factory()->create(['name'=>'test', 'icon_path'=>'test/123/']);
@@ -684,25 +747,29 @@ class AwardControllerTest extends TestCase
 
     public function test_award_icon_files_get_deleted_when_award_is_deleted(){
         $this->actingAsAdmin();
-        Storage::fake('public');
-        Config::set('upload.award.save_as', 'png,jpeg,webp');
+
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
+        Config::set('upload.award.save_as', ['png','jpeg','webp']);
 
         $this->postJson(route('award.store'), Award::factory()->raw(['name' => 'test', 'icon' => UploadedFile::fake()->image('test.png')]))->assertCreated()->assertJsonFragment(['name'=>'test']);
         $award = Award::latest()->first();
 
         $this->assertNotNull($award->icon_path);
 
-        Storage::disk('public')->assertExists($award->icon_path.".jpeg");
-        Storage::disk('public')->assertExists($award->icon_path.".png");
-        Storage::disk('public')->assertExists($award->icon_path.".webp");
+        Storage::disk($disk)->assertExists($award->icon_path.".jpeg");
+        Storage::disk($disk)->assertExists($award->icon_path.".png");
+        Storage::disk($disk)->assertExists($award->icon_path.".webp");
 
         $this->deleteJson(route('award.destroy', $award->id))->assertOk();
         $this->assertModelMissing($award);
         $this->assertDatabaseMissing(Award::class, ['name' => 'test']);
 
-        Storage::disk('public')->assertMissing($award->icon_path.".jpeg");
-        Storage::disk('public')->assertMissing($award->icon_path.".png");
-        Storage::disk('public')->assertMissing($award->icon_path.".webp");
+        Storage::disk($disk)->assertMissing($award->icon_path.".jpeg");
+        Storage::disk($disk)->assertMissing($award->icon_path.".png");
+        Storage::disk($disk)->assertMissing($award->icon_path.".webp");
     }
 
 }

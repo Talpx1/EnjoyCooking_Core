@@ -25,34 +25,27 @@ class Award extends Model
     }
 
     public function getIconPathsAttribute(){
-        $icons = [];
-        foreach(explode(',', config('upload.award.save_as')) as $format) $icons[$format] = Storage::disk('public')->path($this->icon_path . ".{$format}");
-        return collect($icons);
+        return ImageUtils::getMultipleExtensionsPathsCollection(config('upload.award.save_as'), $this->icon_path, config('upload.award.disk'));
     }
 
     public function getIconUrlsAttribute(){
-        $icons = [];
-        foreach(explode(',', config('upload.award.save_as')) as $format) $icons[$format] = Storage::disk('public')->url($this->icon_path . ".{$format}");
-        return collect($icons);
+        return ImageUtils::getMultipleExtensionsUrlsCollection(config('upload.award.save_as'), $this->icon_path, config('upload.award.disk'));
     }
 
     public function getIconsAttribute(){
-        $icons = [];
-        foreach(explode(',', config('upload.award.save_as')) as $format) $icons[$format] = base64_encode(Storage::disk('public')->get($this->icon_path . ".{$format}"));
-        return collect($icons);
+        return ImageUtils::getMultipleExtensionsBase64EncodedCollection(config('upload.award.save_as'), $this->icon_path, config('upload.award.disk'));
     }
 
     public static function storeIcon($icon_source): string{
         $path = config('upload.award.save_path') . uniqid(time().'_');
-        $extensions = explode(',', config('upload.award.save_as'));
-        ImageUtils::saveWithMultipleExtensions($icon_source, 'public', $path, $extensions, config('upload.award.save_width'), config('upload.award.save_height'));
-
+        ImageUtils::saveWithMultipleExtensions($icon_source, config('upload.award.disk'), $path, config('upload.award.save_as'), config('upload.award.save_width'), config('upload.award.save_height'));
         return $path;
     }
 
     public function deleteIconFiles(): bool{
-        $icons = glob(Storage::disk('public')->path($this->icon_path.'.*'));
-        array_walk($icons, fn(&$path) => $path = str_replace(Storage::disk('public')->path(''), '', $path));
-        return Storage::disk('public')->delete($icons);
+        $disk = config('upload.award.disk');
+        $icons = glob(Storage::disk($disk)->path($this->icon_path.'.*'));
+        array_walk($icons, fn(&$path) => $path = str_replace(Storage::disk($disk)->path(''), '', $path));
+        return Storage::disk($disk)->delete($icons);
     }
 }

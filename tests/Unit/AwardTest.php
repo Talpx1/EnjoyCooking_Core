@@ -104,8 +104,12 @@ class AwardTest extends TestCase
     public function test_icon_paths_attribute(){
         $this->seed(PermissionsAndRolesSeeder::class);
         $this->actingAsAdmin();
-        Storage::fake('public');
-        Config::set('upload.award.save_as', 'jpeg,png,webp');
+
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
+        Config::set('upload.award.save_as', ['jpeg','png','webp']);
 
         $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png')]);
         $this->postJson(route('award.store'), $award)->assertCreated();
@@ -140,8 +144,12 @@ class AwardTest extends TestCase
     public function test_icon_urls_attribute(){
         $this->seed(PermissionsAndRolesSeeder::class);
         $this->actingAsAdmin();
-        Storage::fake('public');
-        Config::set('upload.award.save_as', 'jpeg,png,webp');
+
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
+        Config::set('upload.award.save_as', ['jpeg','png','webp']);
 
         $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png')]);
         $this->postJson(route('award.store'), $award)->assertCreated();
@@ -175,8 +183,12 @@ class AwardTest extends TestCase
     public function test_icon_attribute(){
         $this->seed(PermissionsAndRolesSeeder::class);
         $this->actingAsAdmin();
-        Storage::fake('public');
-        Config::set('upload.award.save_as', 'jpeg,png,webp');
+
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
+        Config::set('upload.award.save_as', ['jpeg','png','webp']);
 
         $award = Award::factory()->raw(['icon' => UploadedFile::fake()->image('test.png')]);
         $this->postJson(route('award.store'), $award)->assertCreated();
@@ -195,14 +207,17 @@ class AwardTest extends TestCase
         $this->assertNotEmpty($award->icons->get('png'));
         $this->assertNotEmpty($award->icons->get('webp'));
 
-        $this->assertEquals($award->icons->get('jpeg'), base64_encode(Storage::disk('public')->get("{$award->icon_path}.jpeg")));
-        $this->assertEquals($award->icons->get('png'), base64_encode(Storage::disk('public')->get("{$award->icon_path}.png")));
-        $this->assertEquals($award->icons->get('webp'), base64_encode(Storage::disk('public')->get("{$award->icon_path}.webp")));
+        $this->assertEquals($award->icons->get('jpeg'), base64_encode(Storage::disk($disk)->get("{$award->icon_path}.jpeg")));
+        $this->assertEquals($award->icons->get('png'), base64_encode(Storage::disk($disk)->get("{$award->icon_path}.png")));
+        $this->assertEquals($award->icons->get('webp'), base64_encode(Storage::disk($disk)->get("{$award->icon_path}.webp")));
     }
 
     public function test_store_icon(){
-        Storage::fake('public');
-        Config::set('upload.award.save_as', 'png,jpeg,webp');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+
+        Config::set('upload.award.save_as', ['png','jpeg','webp']);
 
         $icon = UploadedFile::fake()->image('test.png');
 
@@ -211,31 +226,33 @@ class AwardTest extends TestCase
         $this->assertNotNull($path);
         $this->assertNotEmpty($path);
 
-        Storage::disk('public')->assertExists("$path.png");
-        Storage::disk('public')->assertExists("$path.jpeg");
-        Storage::disk('public')->assertExists("$path.webp");
+        Storage::disk($disk)->assertExists("$path.png");
+        Storage::disk($disk)->assertExists("$path.jpeg");
+        Storage::disk($disk)->assertExists("$path.webp");
     }
 
     public function test_delete_icon_files(){
         $this->seed(PermissionsAndRolesSeeder::class);
         $this->actingAsAdmin();
-        Storage::fake('public');
-        Config::set('upload.award.save_as', 'png,jpeg,webp');
+        $disk = 'public';
+        Config::set('upload.award.disk', $disk);
+        Storage::fake($disk);
+        Config::set('upload.award.save_as', ['png','jpeg','webp']);
 
         $this->postJson(route('award.store'), Award::factory()->raw(['name' => 'test', 'icon' => UploadedFile::fake()->image('test.png')]))->assertCreated()->assertJsonFragment(['name'=>'test']);
         $award = Award::latest()->first();
 
-        Storage::disk('public')->assertExists($award->icon_path.".png");
-        Storage::disk('public')->assertExists($award->icon_path.".jpeg");
-        Storage::disk('public')->assertExists($award->icon_path.".webp");
+        Storage::disk($disk)->assertExists($award->icon_path.".png");
+        Storage::disk($disk)->assertExists($award->icon_path.".jpeg");
+        Storage::disk($disk)->assertExists($award->icon_path.".webp");
 
         $result = $award->deleteIconFiles();
 
         $this->assertTrue($result);
 
-        Storage::disk('public')->assertMissing($award->icon_path.".png");
-        Storage::disk('public')->assertMissing($award->icon_path.".jpeg");
-        Storage::disk('public')->assertMissing($award->icon_path.".webp");
+        Storage::disk($disk)->assertMissing($award->icon_path.".png");
+        Storage::disk($disk)->assertMissing($award->icon_path.".jpeg");
+        Storage::disk($disk)->assertMissing($award->icon_path.".webp");
     }
 
 }
