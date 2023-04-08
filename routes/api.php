@@ -6,7 +6,6 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserOauthAccessTokenController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
