@@ -141,4 +141,12 @@ enum Permissions: string {
     case LOGIN = "login";
     case BAN_USER = "ban_user";
     case FORGIVE_USER = "forgive_user";
+        //gender
+    case CREATE_GENDER = "create_gender";
+    case STORE_GENDER = "store_gender";
+    case EDIT_GENDER = "edit_gender";
+    case INDEX_GENDER = "index_gender";
+    case UPDATE_GENDER = "update_gender";
+    case DESTROY_GENDER = "destroy_gender";
+    case SHOW_GENDER = "show_gender";
 }

@@ -18,6 +18,7 @@ class PermissionRoleSeeder extends Seeder {
      *
      * @return void
      */
+
     public function run() {
         $everyonePermissions = [
             Permissions::INDEX_RECIPE->value,
@@ -40,6 +41,8 @@ class PermissionRoleSeeder extends Seeder {
             Permissions::SHOW_SNACK->value,
             Permissions::CREATE_USER->value,
             Permissions::STORE_USER->value,
+            Permissions::INDEX_GENDER->value,
+            Permissions::SHOW_USER->value, //TODO: introduce profile entity: everybody can show profile but non guest user can see user (with policy for user.show, w/out policy for user.current)
         ];
 
         $userPermissions = array_merge($everyonePermissions, [
@@ -84,7 +87,6 @@ class PermissionRoleSeeder extends Seeder {
             Permissions::DESTROY_EXECUTION_IMAGE->value,
             Permissions::STORE_EXECUTION_VIDEO->value,
             Permissions::DESTROY_EXECUTION_VIDEO->value,
-            Permissions::SHOW_USER->value,
             Permissions::EDIT_USER->value,
             Permissions::UPDATE_USER->value,
             Permissions::DESTROY_USER->value,
@@ -109,6 +111,7 @@ class PermissionRoleSeeder extends Seeder {
             Permissions::DESTROY_EXECUTION_VIDEO->value,
             Permissions::BAN_USER->value,
             Permissions::FORGIVE_USER->value,
+            Permissions::LOGIN->value
         ]);
 
         $adminPermissions = array_merge($everyonePermissions, $moderatorPermissions, [
@@ -142,6 +145,15 @@ class PermissionRoleSeeder extends Seeder {
             Permissions::DESTROY_AWARD->value,
             Permissions::ASSIGN_BADGE->value,
             Permissions::INDEX_USER->value,
+            Permissions::CREATE_GENDER->value,
+            Permissions::STORE_GENDER->value,
+            Permissions::EDIT_GENDER->value,
+            Permissions::UPDATE_GENDER->value,
+            Permissions::DESTROY_GENDER->value,
+            Permissions::SHOW_GENDER->value,
+            Permissions::EDIT_USER->value,
+            Permissions::UPDATE_USER->value,
+            Permissions::DESTROY_USER->value,
         ]);
 
         Role::findByName(Roles::ADMIN->value)->givePermissionTo($adminPermissions);

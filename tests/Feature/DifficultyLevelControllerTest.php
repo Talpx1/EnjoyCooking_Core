@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\DifficultyLevel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Str;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Tests\Seeders\PermissionsAndRolesSeeder;
@@ -33,7 +32,7 @@ class DifficultyLevelControllerTest extends TestCase
     /**
      * @test
      */
-    public function test_difficulty_levele_index_gets_paginated(){
+    public function test_difficulty_level_index_gets_paginated(){
         $difficulty_levels = DifficultyLevel::factory(40)->create();
 
         $this->simulateAllowedOrigin();
@@ -53,7 +52,7 @@ class DifficultyLevelControllerTest extends TestCase
     /**
      * @test
      */
-    public function test_authorized_user_can_store_difficulty_levele(){
+    public function test_authorized_user_can_store_difficulty_level(){
         $this->actingAsAdmin();
 
         $difficulty_level = DifficultyLevel::factory()->raw();
@@ -70,7 +69,7 @@ class DifficultyLevelControllerTest extends TestCase
     /**
      * @test
      */
-    public function test_difficulty_levele_name_is_required_on_store(){
+    public function test_difficulty_level_name_is_required_on_store(){
 
         $this->actingAsAdmin();
 
@@ -85,7 +84,7 @@ class DifficultyLevelControllerTest extends TestCase
     /**
      * @test
      */
-    public function test_difficulty_levele_name_must_be_string_on_store(){
+    public function test_difficulty_level_name_must_be_string_on_store(){
 
         $this->actingAsAdmin();
 
@@ -118,7 +117,7 @@ class DifficultyLevelControllerTest extends TestCase
     /**
      * @test
      */
-    public function test_difficulty_levele_name_must_be_unique_on_store(){
+    public function test_difficulty_level_name_must_be_unique_on_store(){
 
         $this->actingAsAdmin();
 
@@ -192,7 +191,7 @@ class DifficultyLevelControllerTest extends TestCase
     /**
      * @test
      */
-    public function test_everyone_can_show_difficulty_levele(){
+    public function test_everyone_can_show_difficulty_level(){
         $difficulty_level = DifficultyLevel::factory()->create();
 
         $this->simulateAllowedOrigin();
@@ -202,7 +201,7 @@ class DifficultyLevelControllerTest extends TestCase
     /**
      * @test
      */
-    public function test_authorized_user_can_update_difficulty_levele(){
+    public function test_authorized_user_can_update_difficulty_level(){
         $this->actingAsAdmin();
 
         $difficulty_level = DifficultyLevel::factory()->create();
@@ -219,7 +218,7 @@ class DifficultyLevelControllerTest extends TestCase
     /**
      * @test
      */
-    public function test_difficulty_levele_name_is_required_on_update(){
+    public function test_difficulty_level_name_is_required_on_update(){
 
         $this->actingAsAdmin();
 
@@ -252,7 +251,7 @@ class DifficultyLevelControllerTest extends TestCase
     /**
      * @test
      */
-    public function test_difficulty_levele_name_must_be_string_on_update(){
+    public function test_difficulty_level_name_must_be_string_on_update(){
         $this->actingAsAdmin();
 
         $difficulty_level = DifficultyLevel::factory()->create();
@@ -264,7 +263,7 @@ class DifficultyLevelControllerTest extends TestCase
     /**
      * @test
      */
-    public function test_difficulty_levele_name_must_be_unique_on_update(){
+    public function test_difficulty_level_name_must_be_unique_on_update(){
         $this->actingAsAdmin();
 
         DifficultyLevel::factory()->create(['name'=>'test']);
@@ -301,7 +300,7 @@ class DifficultyLevelControllerTest extends TestCase
     /**
      * @test
      */
-    public function test_authorized_user_can_destroy_difficulty_levele(){
+    public function test_authorized_user_can_destroy_difficulty_level(){
         $difficulty_level = DifficultyLevel::factory()->create(['name' => 'test']);
 
         $this->actingAsUser();

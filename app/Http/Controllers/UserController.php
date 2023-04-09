@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Permissions;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -60,7 +61,7 @@ class UserController extends Controller
     }
 
     public function current(){
-        if(!\Auth::check()) abort(401);
+        if(!Auth::check() || !(request()->user()?->can(Permissions::SHOW_USER->value) ?? false)) abort(401);
 
         return response()->json(Auth::user());
     }

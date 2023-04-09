@@ -6,7 +6,6 @@ use App\Enums\Permissions;
 use App\Http\Requests\DifficultyLevel\StoreDifficultyLevelRequest;
 use App\Http\Requests\DifficultyLevel\UpdateDifficultyLevelRequest;
 use App\Models\DifficultyLevel;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DifficultyLevelController extends Controller

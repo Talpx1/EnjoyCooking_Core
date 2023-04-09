@@ -5,6 +5,7 @@ use App\Http\Controllers\BadgeController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DifficultyLevelController;
+use App\Http\Controllers\GenderController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserOauthAccessTokenController;
 use Illuminate\Support\Facades\Route;
@@ -20,9 +21,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+//user
 Route::delete('/user/oauth_access_tokens', [UserOauthAccessTokenController::class, 'destroy'])->name('user.access_tokens.destroy');
 Route::get('/user/current', [UserController::class, 'current'])->name('user.current');
 
+//gender
+Route::apiResource('gender', GenderController::class)->except('index');
+
+//all
 Route::apiResources([
     'award' => AwardController::class,
     'badge' => BadgeController::class,
