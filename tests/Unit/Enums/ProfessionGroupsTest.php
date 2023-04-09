@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit;
+namespace Tests\Unit\Enums;
 
 use Tests\TestCase;
 use App\Enums\ProfessionGroups;

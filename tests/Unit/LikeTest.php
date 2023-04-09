@@ -6,12 +6,15 @@ use App\Models\Like;
 use App\Models\Recipe;
 use App\Models\Snack;
 use App\Models\User;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class LikeTest extends TestCase{
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test

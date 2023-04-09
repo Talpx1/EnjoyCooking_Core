@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Models\Follow;
 use App\Models\Tag;
 use App\Models\User;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -12,6 +13,8 @@ use Tests\TestCase;
 class FollowTest extends TestCase
 {
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test
@@ -41,6 +44,7 @@ class FollowTest extends TestCase
      * @test
      */
     public function test_user_id_must_exists_in_users_table(){
+
         $user = User::factory()->create();
         Follow::factory()->create(['user_id' => $user->id]);
         $this->assertDatabaseHas('follows', ['user_id'=>$user->id]);
@@ -54,6 +58,7 @@ class FollowTest extends TestCase
      * @test
      */
     public function test_follow_gets_deleted_if_user_gets_deleted(){
+
         $user = User::factory()->create();
         $follow = Follow::factory()->create(['user_id' => $user->id]);
         $this->assertDatabaseHas('follows', ['user_id'=>$user->id]);
@@ -70,6 +75,7 @@ class FollowTest extends TestCase
      * @test
      */
     public function test_follow_belongs_to_user(){
+
         $user = User::factory()->create();
         $follow = Follow::factory()->create(['user_id' => $user->id]);
         $this->assertNotNull($follow->user);
@@ -81,6 +87,7 @@ class FollowTest extends TestCase
      * @test
      */
     public function test_morphs_to_followable(){
+
         $user = User::factory()->create();
         $tag = Tag::factory()->create();
 
@@ -100,6 +107,7 @@ class FollowTest extends TestCase
      * @test
      */
     public function test_combination_of_followable_id_followable_type_user_id_must_be_unique(){
+
         $tag = Tag::factory()->create();
         $user = User::factory()->create();
         $user2 = User::factory()->create();

@@ -32,7 +32,6 @@ class RecipeFactory extends Factory
             'course_id' => Course::getRandomOrCreate()->id,
             'user_id' => User::getRandomOrCreate()->id,
             'category_id' => Category::getRandomOrCreate()->id,
-            'moderation_status_id' => ModerationStatus::getRandomOrCreate()->id,
             'visibility_status_id' => VisibilityStatus::getRandomOrCreate()->id
         ];
     }

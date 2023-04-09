@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Enums\ModerationStatuses;
 use App\Models\Award;
 use App\Models\Awardable;
 use App\Models\Comment;
@@ -9,8 +10,10 @@ use App\Models\DifficultyLevel;
 use App\Models\Execution;
 use App\Models\Ingredient;
 use App\Models\Like;
+use App\Models\ModerationStatus;
 use App\Models\Recipe;
 use App\Models\User;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,6 +22,8 @@ use Tests\TestCase;
 class CommentTest extends TestCase
 {
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test
@@ -48,6 +53,7 @@ class CommentTest extends TestCase
      * @test
      */
     public function test_user_id_must_exists_in_users_table(){
+
         $user = User::factory()->create();
         Comment::factory()->create(['user_id' => $user->id]);
         $this->assertDatabaseHas('comments', ['user_id'=>$user->id]);
@@ -61,6 +67,7 @@ class CommentTest extends TestCase
      * @test
      */
     public function test_comment_gets_deleted_if_user_gets_deleted(){
+
         $user = User::factory()->create();
         $comment = Comment::factory()->create(['user_id' => $user->id]);
         $this->assertDatabaseHas('comments', ['user_id'=>$user->id]);
@@ -77,6 +84,7 @@ class CommentTest extends TestCase
      * @test
      */
     public function test_comment_belongs_to_user(){
+
         $user = User::factory()->create();
         $comment = Comment::factory()->create(['user_id' => $user->id]);
         $this->assertNotNull($comment->user);
@@ -88,6 +96,7 @@ class CommentTest extends TestCase
      * @test
      */
     public function test_morphs_to_commentable(){
+
         $recipe = Recipe::factory()->create();
         $execution = Execution::factory()->create();
 
@@ -224,6 +233,7 @@ class CommentTest extends TestCase
      * @test
      */
     public function test_comment_morphs_to_many_awards(){
+
         $comment = Comment::factory()->create(['body' => 'test']);
         $comment_awards = Award::factory(2)->create()->each(fn($award) => Awardable::factory()->create(['awardable_id' => $comment->id, 'award_id' => $award->id, 'awardable_type' => $comment::class]));
         $other_comment_awards = Award::factory(4)->create()->each(fn($award) => Awardable::factory()->create(['awardable_id' => Comment::factory()->create()->id, 'award_id' => $award->id, 'awardable_type' => $comment::class]));
@@ -243,6 +253,7 @@ class CommentTest extends TestCase
      * @test
      */
     public function test_when_comment_gets_deleted_its_related_records_in_awardables_table_get_deleted(){
+
         $comment = Comment::factory()->create();
         $awards = Award::factory(3)->create()->each(function($award) use ($comment){
             Awardable::factory()->create(['award_id'=>$award->id, 'awardable_id'=>$comment->id, 'awardable_type'=>$comment::class]);
@@ -262,6 +273,7 @@ class CommentTest extends TestCase
      * @test
      */
     public function test_comment_morphs_many_likes(){
+
         $comment = Comment::factory()->create(['body' => 'test']);
         $comment_likes = collect([
             Like::factory()->create(['likeable_id' => $comment->id, 'likeable_type' => $comment::class, 'user_id' => User::factory()->create()->id]),
@@ -289,6 +301,7 @@ class CommentTest extends TestCase
      * @test
      */
     public function test_when_comment_gets_deleted_its_related_records_in_likes_table_get_deleted(){
+
         $comment = Comment::factory()->create();
         $likes = collect([
             Like::factory()->create(['likeable_id'=>$comment->id, 'likeable_type'=>$comment::class, 'user_id'=>User::factory()->create()->id]),
@@ -308,6 +321,7 @@ class CommentTest extends TestCase
      * @test
      */
     public function test_reply_belongs_to_parent_comment(){
+
         $parent = Comment::factory()->create();
         $reply = Comment::factory()->create(['parent_comment_id' => $parent->id]);
         $this->assertNotNull($reply->parentComment);
@@ -319,6 +333,7 @@ class CommentTest extends TestCase
      * @test
      */
     public function test_comment_has_many_replies(){
+
         $comment = Comment::factory()->create();
         $other_comment = Comment::factory()->create();
         $comment_replies = Comment::factory(2)->create(['parent_comment_id' => $comment->id]);
@@ -347,6 +362,7 @@ class CommentTest extends TestCase
      * @test
      */
     public function test_has_replies_attribute(){
+
         $comment = Comment::factory()->create();
         $other_comment = Comment::factory()->create();
 
@@ -365,6 +381,7 @@ class CommentTest extends TestCase
      * @test
      */
     public function test_is_reply_attribute(){
+
         $comment = Comment::factory()->create();
         $other_comment = Comment::factory()->create();
 
@@ -379,6 +396,7 @@ class CommentTest extends TestCase
      * @test
      */
     public function test_replies_get_deleted_if_parent_comment_gets_deleted(){
+
         $comment = Comment::factory()->create(['body' => 'comment_test']);
         $other_comment = Comment::factory()->create(['body' => 'other_comment_test']);
         $comment_replies = Comment::factory(3)->create(['body' => 'comment_reply','parent_comment_id' => $comment->id]);
@@ -411,5 +429,73 @@ class CommentTest extends TestCase
         $this->assertModelExists($other_comment);
         $other_comment_replies->each(fn($reply) => $this->assertModelExists($reply));
         $other_comment_reply_replies->each(fn($reply) => $this->assertModelExists($reply));
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_is_required(){
+        $this->expectException(QueryException::class);
+        Comment::factory()->create(['moderation_status_id'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_must_exists_in_moderation_statuses_table(){
+        $moderation_status = ModerationStatus::factory()->create();
+        Comment::factory()->create(['body' => 'test', 'moderation_status_id' => $moderation_status->id]);
+        $this->assertDatabaseHas(Comment::class, ['body'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->expectException(QueryException::class);
+        Comment::factory()->create(['body' => 'test 2', 'moderation_status_id' => 111]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_elimination_gets_restricted_if_recipes_depends_on_it(){
+        $moderation_status = ModerationStatus::factory()->create(['name'=>'test']);
+        $comment = Comment::factory()->create(['body' => 'test', 'moderation_status_id' => $moderation_status->id]);
+
+        $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseHas(Comment::class, ['body'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->expectException(QueryException::class);
+        $moderation_status->delete();
+
+        $this->assertModelExists($moderation_status);
+        $this->assertModelExists($comment);
+
+        $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseHas(Comment::class, ['body'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $comment->delete();
+        $moderation_status->delete();
+
+        $this->assertDatabaseMissing('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseMissing('comments', ['body'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->assertModelMissing($comment);
+        $this->assertModelMissing($moderation_status);
+    }
+
+    /**
+     * @test
+     */
+    public function test_comment_belongs_to_moderation_status(){
+        $moderation_status = ModerationStatus::factory()->create();
+        $comment = Comment::factory()->create(['moderation_status_id' => $moderation_status->id]);
+        $this->assertNotNull($comment->moderationStatus);
+        $this->assertInstanceOf(ModerationStatus::class, $comment->moderationStatus);
+        $this->assertEquals($comment->moderationStatus->id, $moderation_status->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_defaults_to_approved_moderation_status_id(){
+        $comment = Comment::factory()->create();
+        $this->assertDatabaseHas(Comment::class, ['id'=>$comment->id, 'body'=>$comment->body, 'moderation_status_id'=>ModerationStatuses::APPROVED->value]);
     }
 }

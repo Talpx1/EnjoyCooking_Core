@@ -8,6 +8,7 @@ use App\Models\Ingredient;
 use App\Models\Rating;
 use App\Models\Recipe;
 use App\Models\User;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -15,6 +16,8 @@ use Tests\TestCase;
 class RatingTest extends TestCase
 {
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test

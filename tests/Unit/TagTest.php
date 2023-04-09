@@ -2,13 +2,16 @@
 
 namespace Tests\Unit;
 
+use App\Enums\ModerationStatuses;
 use App\Models\Follow;
 use App\Models\Ingredient;
+use App\Models\ModerationStatus;
 use App\Models\Recipe;
 use App\Models\Snack;
 use App\Models\Tag;
 use App\Models\Taggable;
 use App\Models\User;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,6 +20,8 @@ use Tests\TestCase;
 class TagTest extends TestCase{
 
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test
@@ -171,6 +176,74 @@ class TagTest extends TestCase{
         $this->assertDatabaseMissing('follows', ['followable_id'=>$tag->id, 'followable_type'=>$tag::class]);
 
         $follows->each(fn($follow) => $this->assertModelMissing($follow));
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_is_required(){
+        $this->expectException(QueryException::class);
+        Tag::factory()->create(['moderation_status_id'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_must_exists_in_moderation_statuses_table(){
+        $moderation_status = ModerationStatus::factory()->create();
+        Tag::factory()->create(['name' => 'test', 'moderation_status_id' => $moderation_status->id]);
+        $this->assertDatabaseHas(Tag::class, ['name'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->expectException(QueryException::class);
+        Tag::factory()->create(['name' => 'test 2', 'moderation_status_id' => 111]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_elimination_gets_restricted_if_recipes_depends_on_it(){
+        $moderation_status = ModerationStatus::factory()->create(['name'=>'test']);
+        $tag = Tag::factory()->create(['name' => 'test', 'moderation_status_id' => $moderation_status->id]);
+
+        $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseHas(Tag::class, ['name'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->expectException(QueryException::class);
+        $moderation_status->delete();
+
+        $this->assertModelExists($moderation_status);
+        $this->assertModelExists($tag);
+
+        $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseHas(Tag::class, ['name'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $tag->delete();
+        $moderation_status->delete();
+
+        $this->assertDatabaseMissing('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseMissing('tags', ['name'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->assertModelMissing($tag);
+        $this->assertModelMissing($moderation_status);
+    }
+
+    /**
+     * @test
+     */
+    public function test_tag_belongs_to_moderation_status(){
+        $moderation_status = ModerationStatus::factory()->create();
+        $tag = Tag::factory()->create(['moderation_status_id' => $moderation_status->id]);
+        $this->assertNotNull($tag->moderationStatus);
+        $this->assertInstanceOf(ModerationStatus::class, $tag->moderationStatus);
+        $this->assertEquals($tag->moderationStatus->id, $moderation_status->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_defaults_to_pending_moderation_status_id(){
+        $tag = Tag::factory()->create();
+        $this->assertDatabaseHas(Tag::class, ['id'=>$tag->id, 'name'=>$tag->name, 'moderation_status_id'=>ModerationStatuses::PENDING_MODERATION->value]);
     }
 
 }

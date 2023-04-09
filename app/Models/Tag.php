@@ -40,4 +40,7 @@ class Tag extends Model
         return $this->morphMany(Follow::class, 'followable');
     }
 
+    public function moderationStatus(){
+        return $this->belongsTo(ModerationStatus::class);
+    }
 }

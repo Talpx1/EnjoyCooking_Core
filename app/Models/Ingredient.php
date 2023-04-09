@@ -43,4 +43,8 @@ class Ingredient extends Model
     public function tags(){
         return $this->morphToMany(Tag::class, 'taggable');
     }
+
+    public function moderationStatus(){
+        return $this->belongsTo(ModerationStatus::class);
+    }
 }

@@ -47,4 +47,8 @@ class Comment extends Model{
     public function getIsReplyAttribute(){
         return !is_null($this->parent_comment_id);
     }
+
+    public function moderationStatus(){
+        return $this->belongsTo(ModerationStatus::class);
+    }
 }

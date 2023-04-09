@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\Recipe;
 use App\Models\RecipeVideo;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -11,6 +12,8 @@ use Tests\TestCase;
 class RecipeVideoTest extends TestCase {
 
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test

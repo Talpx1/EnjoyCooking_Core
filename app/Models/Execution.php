@@ -52,4 +52,8 @@ class Execution extends Model
     public function videos(){
         return $this->hasMany(ExecutionVideo::class);
     }
+
+    public function moderationStatus(){
+        return $this->belongsTo(ModerationStatus::class);
+    }
 }

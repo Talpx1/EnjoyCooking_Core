@@ -2,14 +2,17 @@
 
 namespace Tests\Unit;
 
+use App\Enums\ModerationStatuses;
 use App\Models\Ingredient;
 use App\Models\IngredientImage;
 use App\Models\IngredientRecipe;
 use App\Models\IngredientVideo;
+use App\Models\ModerationStatus;
 use App\Models\Recipe;
 use App\Models\Tag;
 use App\Models\Taggable;
 use App\Models\User;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,6 +20,8 @@ use Tests\TestCase;
 
 class IngredientTest extends TestCase{
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test
@@ -237,5 +242,73 @@ class IngredientTest extends TestCase{
         $tags->each(function($tag) use ($ingredient){
             $this->assertDatabaseMissing('taggables', ['tag_id'=>$tag->id, 'taggable_id'=>$ingredient->id, 'taggable_type'=>$ingredient::class]);
         });
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_is_required(){
+        $this->expectException(QueryException::class);
+        Ingredient::factory()->create(['moderation_status_id'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_must_exists_in_moderation_statuses_table(){
+        $moderation_status = ModerationStatus::factory()->create();
+        Ingredient::factory()->create(['name' => 'test', 'moderation_status_id' => $moderation_status->id]);
+        $this->assertDatabaseHas(Ingredient::class, ['name'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->expectException(QueryException::class);
+        Ingredient::factory()->create(['name' => 'test 2', 'moderation_status_id' => 111]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_elimination_gets_restricted_if_ingredients_depends_on_it(){
+        $moderation_status = ModerationStatus::factory()->create(['name'=>'test']);
+        $ingredient = Ingredient::factory()->create(['name' => 'test', 'moderation_status_id' => $moderation_status->id]);
+
+        $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseHas(Ingredient::class, ['name'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->expectException(QueryException::class);
+        $moderation_status->delete();
+
+        $this->assertModelExists($moderation_status);
+        $this->assertModelExists($ingredient);
+
+        $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseHas(Ingredient::class, ['name'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $ingredient->delete();
+        $moderation_status->delete();
+
+        $this->assertDatabaseMissing('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseMissing('ingredients', ['name'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->assertModelMissing($ingredient);
+        $this->assertModelMissing($moderation_status);
+    }
+
+    /**
+     * @test
+     */
+    public function test_ingredient_belongs_to_moderation_status(){
+        $moderation_status = ModerationStatus::factory()->create();
+        $ingredient = Ingredient::factory()->create(['moderation_status_id' => $moderation_status->id]);
+        $this->assertNotNull($ingredient->moderationStatus);
+        $this->assertInstanceOf(ModerationStatus::class, $ingredient->moderationStatus);
+        $this->assertEquals($ingredient->moderationStatus->id, $moderation_status->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_defaults_to_pending_moderation_status_id(){
+        $ingredient = Ingredient::factory()->create();
+        $this->assertDatabaseHas(Ingredient::class, ['id'=>$ingredient->id, 'name'=>$ingredient->name, 'moderation_status_id'=>ModerationStatuses::PENDING_MODERATION->value]);
     }
 }

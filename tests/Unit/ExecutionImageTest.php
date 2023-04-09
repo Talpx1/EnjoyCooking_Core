@@ -4,12 +4,15 @@ namespace Tests\Unit;
 
 use App\Models\Execution;
 use App\Models\ExecutionImage;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class ExecutionImageTest extends TestCase{
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test
@@ -23,6 +26,7 @@ class ExecutionImageTest extends TestCase{
      * @test
      */
     public function test_path_must_be_unique(){
+
         ExecutionImage::factory()->create(['path'=>'test']);
         $this->expectException(QueryException::class);
         ExecutionImage::factory()->create(['path'=>'test']);
@@ -40,6 +44,7 @@ class ExecutionImageTest extends TestCase{
      * @test
      */
     public function test_thumbnail_path_must_be_unique(){
+
         ExecutionImage::factory()->create(['thumbnail_path'=>'test']);
         $this->expectException(QueryException::class);
         ExecutionImage::factory()->create(['thumbnail_path'=>'test']);
@@ -57,6 +62,7 @@ class ExecutionImageTest extends TestCase{
      * @test
      */
     public function test_execution_id_must_exists_in_executions_table(){
+
         $execution = Execution::factory()->create();
         ExecutionImage::factory()->create(['path' => 'test', 'execution_id' => $execution->id]);
         $this->assertDatabaseHas('execution_images', ['path'=>'test', 'execution_id'=>$execution->id]);
@@ -69,6 +75,7 @@ class ExecutionImageTest extends TestCase{
      * @test
      */
     public function test_execution_image_gets_deleted_if_parent_execution_gets_deleted(){
+
         $execution = Execution::factory()->create();
         $image = ExecutionImage::factory()->create(['path' => 'test1', 'execution_id' => $execution->id]);
 
@@ -87,6 +94,7 @@ class ExecutionImageTest extends TestCase{
      * @test
      */
     public function test_execution_image_belongs_to_execution(){
+
         $execution = Execution::factory()->create();
         $execution_image = ExecutionImage::factory()->create(['path' => 'test']);
         $this->assertNotNull($execution_image->execution);

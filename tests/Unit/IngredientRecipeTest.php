@@ -6,6 +6,7 @@ use App\Models\Ingredient;
 use App\Models\IngredientRecipe;
 use App\Models\MeasureUnit;
 use App\Models\Recipe;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,6 +14,8 @@ use Tests\TestCase;
 class IngredientRecipeTest extends TestCase
 {
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test

@@ -94,23 +94,18 @@ class PermissionRoleSeeder extends Seeder {
         ]);
 
         $moderatorPermissions = array_merge($everyonePermissions, [
-            Permissions::APPROVE_RECIPE->value,
-            Permissions::REJECT_RECIPE->value,
-            Permissions::APPROVE_INGREDIENT->value,
-            Permissions::REJECT_INGREDIENT->value,
-            Permissions::APPROVE_INGREDIENT_IMAGE->value,
-            Permissions::REJECT_INGREDIENT_VIDEO->value,
+            Permissions::BAN_RECIPE->value,
+            Permissions::BAN_INGREDIENT->value,
+            Permissions::BAN_INGREDIENT_IMAGE->value,
             Permissions::DESTROY_INGREDIENT_IMAGE->value,
             Permissions::DESTROY_INGREDIENT_VIDEO->value,
-            Permissions::APPROVE_TAG->value,
-            Permissions::REJECT_TAG->value,
+            Permissions::BAN_TAG->value,
             Permissions::BAN_COMMENT->value,
             Permissions::BAN_SNACK->value,
             Permissions::BAN_EXECUTION->value,
             Permissions::DESTROY_EXECUTION_IMAGE->value,
             Permissions::DESTROY_EXECUTION_VIDEO->value,
             Permissions::BAN_USER->value,
-            Permissions::FORGIVE_USER->value,
             Permissions::LOGIN->value
         ]);
 

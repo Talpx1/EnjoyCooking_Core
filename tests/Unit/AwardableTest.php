@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Models\Award;
 use App\Models\Awardable;
 use App\Models\User;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -12,6 +13,8 @@ use Tests\TestCase;
 class AwardableTest extends TestCase
 {
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test
@@ -30,6 +33,7 @@ class AwardableTest extends TestCase
      * @test
      */
     public function test_award_id_must_exists_in_awards_table(){
+
         $award = Award::factory()->create();
         Awardable::factory()->create(['award_id' => $award->id]);
         $this->assertDatabaseHas('awardables', ['award_id'=>$award->id]);
@@ -43,6 +47,7 @@ class AwardableTest extends TestCase
      * @test
      */
     public function test_awardable_gets_deleted_if_award_gets_deleted(){
+
         $award = Award::factory()->create();
         $awardable = Awardable::factory()->create(['award_id' => $award->id]);
         $this->assertDatabaseHas('awardables', ['award_id'=>$award->id]);
@@ -59,6 +64,7 @@ class AwardableTest extends TestCase
      * @test
      */
     public function test_awardable_gets_deleted_if_user_gets_deleted(){
+
         $user = User::factory()->create();
         $awardable = Awardable::factory()->create(['user_id' => $user->id]);
         $this->assertDatabaseHas('awardables', ['user_id' => $user->id]);

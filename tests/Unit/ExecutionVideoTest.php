@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\Execution;
 use App\Models\ExecutionVideo;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -11,6 +12,8 @@ use Tests\TestCase;
 class ExecutionVideoTest extends TestCase
 {
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test
@@ -24,6 +27,7 @@ class ExecutionVideoTest extends TestCase
      * @test
      */
     public function test_path_must_be_unique(){
+
         ExecutionVideo::factory()->create(['path'=>'test']);
         $this->expectException(QueryException::class);
         ExecutionVideo::factory()->create(['path'=>'test']);
@@ -41,6 +45,7 @@ class ExecutionVideoTest extends TestCase
      * @test
      */
     public function test_execution_id_must_exists_in_executions_table(){
+
         $execution = Execution::factory()->create();
         ExecutionVideo::factory()->create(['path' => 'test', 'execution_id' => $execution->id]);
         $this->assertDatabaseHas('execution_videos', ['path'=>'test', 'execution_id'=>$execution->id]);
@@ -53,6 +58,7 @@ class ExecutionVideoTest extends TestCase
      * @test
      */
     public function test_execution_video_gets_deleted_if_parent_execution_gets_deleted(){
+
         $execution = Execution::factory()->create();
         $video = ExecutionVideo::factory()->create(['path' => 'test1', 'execution_id' => $execution->id]);
 
@@ -71,6 +77,7 @@ class ExecutionVideoTest extends TestCase
      * @test
      */
     public function test_execution_video_belongs_to_execution(){
+
         $execution = Execution::factory()->create();
         $execution_video = ExecutionVideo::factory()->create(['path' => 'test']);
         $this->assertNotNull($execution_video->execution);

@@ -6,12 +6,15 @@ use App\Models\Ingredient;
 use App\Models\Recipe;
 use App\Models\Tag;
 use App\Models\Taggable;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class TaggableTest extends TestCase{
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test

@@ -38,4 +38,8 @@ class Snack extends Model
     public function favorites(){
         return $this->morphMany(Favorite::class, 'favoritable');
     }
+
+    public function moderationStatus(){
+        return $this->belongsTo(ModerationStatus::class);
+    }
 }

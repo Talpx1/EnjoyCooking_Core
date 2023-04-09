@@ -2,14 +2,17 @@
 
 namespace Tests\Unit;
 
+use App\Enums\ModerationStatuses;
 use App\Models\Comment;
 use App\Models\Favorite;
 use App\Models\Like;
+use App\Models\ModerationStatus;
 use App\Models\Recipe;
 use App\Models\Snack;
 use App\Models\Tag;
 use App\Models\Taggable;
 use App\Models\User;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,6 +20,8 @@ use Tests\TestCase;
 
 class SnackTest extends TestCase{
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test
@@ -308,6 +313,74 @@ class SnackTest extends TestCase{
         $this->assertDatabaseMissing('favorites', ['favoritable_id'=>$snack->id, 'favoritable_type'=>$snack::class]);
 
         $favorites->each(fn($favorite) => $this->assertModelMissing($favorite));
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_is_required(){
+        $this->expectException(QueryException::class);
+        Snack::factory()->create(['moderation_status_id'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_must_exists_in_moderation_statuses_table(){
+        $moderation_status = ModerationStatus::factory()->create();
+        Snack::factory()->create(['title' => 'test', 'moderation_status_id' => $moderation_status->id]);
+        $this->assertDatabaseHas(Snack::class, ['title'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->expectException(QueryException::class);
+        Snack::factory()->create(['title' => 'test 2', 'moderation_status_id' => 111]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_elimination_gets_restricted_if_recipes_depends_on_it(){
+        $moderation_status = ModerationStatus::factory()->create(['name'=>'test']);
+        $snack = Snack::factory()->create(['title' => 'test', 'moderation_status_id' => $moderation_status->id]);
+
+        $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseHas(Snack::class, ['title'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->expectException(QueryException::class);
+        $moderation_status->delete();
+
+        $this->assertModelExists($moderation_status);
+        $this->assertModelExists($snack);
+
+        $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseHas(Snack::class, ['title'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $snack->delete();
+        $moderation_status->delete();
+
+        $this->assertDatabaseMissing('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseMissing('snacks', ['title'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->assertModelMissing($snack);
+        $this->assertModelMissing($moderation_status);
+    }
+
+    /**
+     * @test
+     */
+    public function test_snack_belongs_to_moderation_status(){
+        $moderation_status = ModerationStatus::factory()->create();
+        $snack = Snack::factory()->create(['moderation_status_id' => $moderation_status->id]);
+        $this->assertNotNull($snack->moderationStatus);
+        $this->assertInstanceOf(ModerationStatus::class, $snack->moderationStatus);
+        $this->assertEquals($snack->moderationStatus->id, $moderation_status->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_defaults_to_approved_moderation_status_id(){
+        $snack = Snack::factory()->create();
+        $this->assertDatabaseHas(Snack::class, ['id'=>$snack->id, 'title'=>$snack->title, 'moderation_status_id'=>ModerationStatuses::APPROVED->value]);
     }
 
 }

@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\Execution;
 use App\Models\Like;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\Eloquent\Collection;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -17,6 +18,8 @@ use App\Models\Recipe;
 class RepostTest extends TestCase
 {
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test

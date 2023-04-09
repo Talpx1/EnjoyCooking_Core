@@ -16,8 +16,7 @@ enum Permissions: string {
     case UPDATE_RECIPE = "update_recipe";
     case DESTROY_RECIPE = "destroy_recipe";
     case SHOW_RECIPE = "show_recipe";
-    case APPROVE_RECIPE = "approve_recipe";
-    case REJECT_RECIPE = "reject_recipe";
+    case BAN_RECIPE = "ban_recipe";
         //recipe image
     case STORE_RECIPE_IMAGE = "store_recipe_image";
     case DESTROY_RECIPE_IMAGE = "destroy_recipe_image";
@@ -32,18 +31,15 @@ enum Permissions: string {
     case UPDATE_INGREDIENT = "update_ingredient";
     case DESTROY_INGREDIENT = "destroy_ingredient";
     case SHOW_INGREDIENT = "show_ingredient";
-    case APPROVE_INGREDIENT = "approve_ingredient";
-    case REJECT_INGREDIENT = "reject_ingredient";
+    case BAN_INGREDIENT = "ban_ingredient";
         //ingredient image
     case STORE_INGREDIENT_IMAGE = "store_ingredient_image";
     case DESTROY_INGREDIENT_IMAGE = "destroy_ingredient_image";
-    case APPROVE_INGREDIENT_IMAGE = "approve_ingredient_image";
-    case REJECT_INGREDIENT_IMAGE = "reject_ingredient_image";
+    case BAN_INGREDIENT_IMAGE = "ban_ingredient_image";
         //ingredient video
     case STORE_INGREDIENT_VIDEO = "store_ingredient_video";
     case DESTROY_INGREDIENT_VIDEO = "destroy_ingredient_video";
-    case APPROVE_INGREDIENT_VIDEO = "approve_ingredient_video";
-    case REJECT_INGREDIENT_VIDEO = "reject_ingredient_video";
+    case BAN_INGREDIENT_VIDEO = "ban_ingredient_video";
         //tag
     case CREATE_TAG = "create_tag";
     case STORE_TAG = "store_tag";
@@ -52,8 +48,7 @@ enum Permissions: string {
     case UPDATE_TAG = "update_tag";
     case DESTROY_TAG = "destroy_tag";
     case SHOW_TAG = "show_tag";
-    case APPROVE_TAG = "approve_tag";
-    case REJECT_TAG = "reject_tag";
+    case BAN_TAG = "ban_tag";
         //category
     case CREATE_CATEGORY = "create_category";
     case STORE_CATEGORY = "store_category";
@@ -140,7 +135,6 @@ enum Permissions: string {
     case DESTROY_USER = "destroy_user";
     case LOGIN = "login";
     case BAN_USER = "ban_user";
-    case FORGIVE_USER = "forgive_user";
         //gender
     case CREATE_GENDER = "create_gender";
     case STORE_GENDER = "store_gender";

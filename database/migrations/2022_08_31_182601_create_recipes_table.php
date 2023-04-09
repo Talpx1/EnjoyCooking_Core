@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ModerationStatuses;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -36,7 +37,7 @@ return new class extends Migration
             $table->foreignIdFor(Course::class)->constrained()->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(User::class)->constrained()->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(Category::class)->constrained()->restrictOnDelete()->cascadeOnUpdate();
-            $table->foreignIdFor(ModerationStatus::class)->constrained()->restrictOnDelete()->cascadeOnUpdate();
+            $table->foreignIdFor(ModerationStatus::class)->default(ModerationStatuses::PENDING_MODERATION->value)->constrained()->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(VisibilityStatus::class)->constrained()->restrictOnDelete()->cascadeOnUpdate();
 
             $table->timestamps();

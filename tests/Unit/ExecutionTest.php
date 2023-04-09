@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Enums\ModerationStatuses;
 use App\Models\Award;
 use App\Models\Awardable;
 use App\Models\Comment;
@@ -10,10 +11,12 @@ use App\Models\ExecutionImage;
 use App\Models\ExecutionVideo;
 use App\Models\Favorite;
 use App\Models\Like;
+use App\Models\ModerationStatus;
 use App\Models\Rating;
 use App\Models\Recipe;
 use App\Models\Repost;
 use App\Models\User;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,11 +26,14 @@ class ExecutionTest extends TestCase
 {
 
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test
      */
     public function test_recipe_id_is_nullable(){
+
         Execution::factory()->create(['recipe_id'=>null]);
         $this->assertDatabaseHas('executions', ['recipe_id'=>null]);
     }
@@ -36,19 +42,21 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_recipe_id_must_exists_in_recipes_table(){
+
         $recipe = Recipe::factory()->create();
         Execution::factory()->create(['recipe_id' => $recipe->id]);
         $this->assertDatabaseHas('executions', ['recipe_id'=>$recipe->id]);
 
         $this->expectException(QueryException::class);
         Execution::factory()->create(['recipe_id' => 111]);
-        $this->assertDatabaseMissing('executions', ['recipe_id'=>111]);
+        $this->assertDatabaseMissing(Execution::class, ['recipe_id'=>111]);
     }
 
     /**
      * @test
      */
     public function test_execution_belongs_to_user(){
+
         $user = User::factory()->create();
         $execution = Execution::factory()->create(['user_id' => $user->id]);
         $this->assertNotNull($execution->user);
@@ -60,6 +68,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_execution_belongs_to_recipe(){
+
         $recipe = Recipe::factory()->create();
         $execution = Execution::factory()->create(['recipe_id' => $recipe->id]);
         $this->assertNotNull($execution->recipe);
@@ -79,6 +88,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_user_id_must_exists_in_users_table(){
+
         $user = User::factory()->create();
         Execution::factory()->create(['user_id' => $user->id]);
         $this->assertDatabaseHas('executions', ['user_id'=>$user->id]);
@@ -91,6 +101,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_executions_get_deleted_if_related_user_gets_deleted(){
+
         $user = User::factory()->create(['username' => 'user_test']);
         $other_user = User::factory()->create(['username' => 'other_user_test']);
         $execution = Execution::factory()->create(['user_id' => $user->id]);
@@ -106,8 +117,8 @@ class ExecutionTest extends TestCase
         $user->delete();
 
         $this->assertDatabaseMissing('users', ['username'=>'user_test']);
-        $this->assertDatabaseMissing('executions', ['user_id' => $user->id]);
-        $this->assertDatabaseMissing('executions', ['user_id' => $user->id]);
+        $this->assertDatabaseMissing(Execution::class, ['user_id' => $user->id]);
+        $this->assertDatabaseMissing(Execution::class, ['user_id' => $user->id]);
 
         $this->assertModelMissing($user);
         $this->assertModelMissing($execution);
@@ -123,10 +134,11 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_recipe_id_gets_set_as_null_if_recipe_gets_deleted(){
+
         $recipe = Recipe::factory()->create(['title' => 'recipe_test']);
         $execution = Execution::factory()->create(['recipe_id' => $recipe->id]);
 
-        $this->assertDatabaseHas('recipes', ['title'=>'recipe_test']);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'recipe_test']);
         $this->assertDatabaseHas('executions', ['recipe_id'=>$recipe->id]);
         $this->assertEquals($recipe->id, $execution->recipe_id);
 
@@ -136,7 +148,7 @@ class ExecutionTest extends TestCase
         $this->assertModelExists($execution);
 
         $this->assertDatabaseMissing('recipes', ['title'=>'recipe_test']);
-        $this->assertDatabaseMissing('executions', ['recipe_id'=>$recipe->id]);
+        $this->assertDatabaseMissing(Execution::class, ['recipe_id'=>$recipe->id]);
 
         $this->assertNull($execution->fresh()->recipe_id);
         $this->assertDatabaseHas('executions', ['recipe_id'=>null]);
@@ -146,6 +158,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_when_execution_gets_deleted_its_related_records_in_likes_table_get_deleted(){
+
         $execution = Execution::factory()->create();
         $likes = collect([
             Like::factory()->create(['likeable_id'=>$execution->id, 'likeable_type'=>$execution::class, 'user_id'=>User::factory()->create()->id]),
@@ -155,7 +168,7 @@ class ExecutionTest extends TestCase
 
         $execution->delete();
         $this->assertModelMissing($execution);
-        $this->assertDatabaseMissing('executions', ['title'=>$execution->id]);
+        $this->assertDatabaseMissing(Execution::class, ['title'=>$execution->id]);
         $this->assertDatabaseMissing('likes', ['likeable_id'=>$execution->id, 'likeable_type'=>$execution::class]);
 
         $likes->each(fn($like) => $this->assertModelMissing($like));
@@ -165,6 +178,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_execution_morphs_many_reposts(){
+
         $execution = Execution::factory()->create();
         $execution_reposts = collect([
             Repost::factory()->create(['repostable_id' => $execution->id, 'repostable_type' => $execution::class, 'user_id' => User::factory()->create()->id]),
@@ -192,6 +206,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_execution_morphs_many_likes(){
+
         $execution = Execution::factory()->create();
         $execution_likes = collect([
             Like::factory()->create(['likeable_id' => $execution->id, 'likeable_type' => $execution::class, 'user_id' => User::factory()->create()->id]),
@@ -219,6 +234,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_execution_morphs_many_favorites(){
+
         $execution = Execution::factory()->create();
         $execution_favorites = collect([
             Favorite::factory()->create(['favoritable_id' => $execution->id, 'favoritable_type' => $execution::class, 'user_id' => User::factory()->create()->id]),
@@ -246,6 +262,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_when_execution_gets_deleted_its_related_records_in_favorites_table_get_deleted(){
+
         $execution = Execution::factory()->create();
         $favorites = collect([
             Favorite::factory()->create(['favoritable_id'=>$execution->id, 'favoritable_type'=>$execution::class, 'user_id'=>User::factory()->create()->id]),
@@ -255,7 +272,7 @@ class ExecutionTest extends TestCase
 
         $execution->delete();
         $this->assertModelMissing($execution);
-        $this->assertDatabaseMissing('executions', ['title'=>$execution->id]);
+        $this->assertDatabaseMissing(Execution::class, ['title'=>$execution->id]);
         $this->assertDatabaseMissing('favorites', ['favoritable_id'=>$execution->id, 'favoritable_type'=>$execution::class]);
 
         $favorites->each(fn($favorite) => $this->assertModelMissing($favorite));
@@ -265,6 +282,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_execution_morphs_many_ratings(){
+
         $execution = Execution::factory()->create();
         $execution_ratings = collect([
             Rating::factory()->create(['rateable_id'=>$execution->id, 'rateable_type'=>Execution::class, 'user_id' => User::factory()->create()->id]),
@@ -292,6 +310,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_execution_morphs_to_many_awards(){
+
         $execution = Execution::factory()->create();
         $execution_awards = Award::factory(2)->create()->each(fn($award) => Awardable::factory()->create(['awardable_id' => $execution->id, 'award_id' => $award->id, 'awardable_type' => $execution::class]));
         $other_execution_awards = Award::factory(4)->create()->each(fn($award) => Awardable::factory()->create(['awardable_id' => Execution::factory()->create()->id, 'award_id' => $award->id, 'awardable_type' => $execution::class]));
@@ -311,6 +330,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_when_execution_gets_deleted_its_related_records_in_awardables_table_get_deleted(){
+
         $execution = Execution::factory()->create();
         $awards = Award::factory(3)->create()->each(function($award) use ($execution){
             Awardable::factory()->create(['award_id'=>$award->id, 'awardable_id'=>$execution->id, 'awardable_type'=>$execution::class]);
@@ -319,7 +339,7 @@ class ExecutionTest extends TestCase
 
         $execution->delete();
         $this->assertModelMissing($execution);
-        $this->assertDatabaseMissing('executions', ['title'=>$execution->id]);
+        $this->assertDatabaseMissing(Execution::class, ['title'=>$execution->id]);
 
         $awards->each(function($award) use ($execution){
             $this->assertDatabaseMissing('awardables', ['award_id'=>$award->id, 'awardable_id'=>$execution->id, 'awardable_type'=>$execution::class]);
@@ -330,6 +350,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_when_execution_gets_deleted_its_related_records_in_reposts_table_get_deleted(){
+
         $execution = Execution::factory()->create();
         $reposts = collect([
             Repost::factory()->create(['repostable_id'=>$execution->id, 'repostable_type'=>$execution::class, 'user_id'=>User::factory()->create()->id]),
@@ -340,7 +361,7 @@ class ExecutionTest extends TestCase
 
         $execution->delete();
         $this->assertModelMissing($execution);
-        $this->assertDatabaseMissing('executions', ['title'=>$execution->id]);
+        $this->assertDatabaseMissing(Execution::class, ['title'=>$execution->id]);
 
         $reposts->each(function($repost) use ($execution){
             $this->assertDatabaseMissing('reposts', ['repostable_id'=>$execution->id, 'repostable_type'=>$execution::class]);
@@ -351,12 +372,13 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_when_execution_gets_deleted_its_related_records_in_comments_table_get_deleted(){
+
         $execution = Execution::factory()->create();
         $comments = Comment::factory(3)->create(['commentable_id'=>$execution->id, 'commentable_type'=>$execution::class]);
 
         $execution->delete();
         $this->assertModelMissing($execution);
-        $this->assertDatabaseMissing('executions', ['title'=>$execution->id]);
+        $this->assertDatabaseMissing(Execution::class, ['title'=>$execution->id]);
         $this->assertDatabaseMissing('comments', ['commentable_id'=>$execution->id, 'commentable_type'=>$execution::class]);
 
         $comments->each(fn($comment) => $this->assertModelMissing($comment));
@@ -366,6 +388,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_when_execution_gets_deleted_its_related_records_in_ratings_table_get_deleted(){
+
         $execution = Execution::factory()->create();
         $ratings = collect([
             Rating::factory()->create(['rateable_id'=>$execution->id, 'rateable_type'=>$execution::class, 'user_id'=>User::factory()->create()->id]),
@@ -375,7 +398,7 @@ class ExecutionTest extends TestCase
 
         $execution->delete();
         $this->assertModelMissing($execution);
-        $this->assertDatabaseMissing('executions', ['title'=>$execution->id]);
+        $this->assertDatabaseMissing(Execution::class, ['title'=>$execution->id]);
         $this->assertDatabaseMissing('ratings', ['rateable_id'=>$execution->id, 'rateable_type'=>$execution::class]);
 
         $ratings->each(fn($rating) => $this->assertModelMissing($rating));
@@ -385,6 +408,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_execution_morphs_many_comments(){
+
         $execution = Execution::factory()->create();
         $execution_comments = Comment::factory(2)->create(['commentable_id' => $execution->id, 'commentable_type' => $execution::class]);
         $other_execution_comments = Comment::factory(4)->create(['commentable_id'=>Execution::factory()->create()->id, 'commentable_type' => $execution::class]);
@@ -404,6 +428,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_execution_has_many_execution_images(){
+
         $execution = Execution::factory()->create();
         $execution_images = ExecutionImage::factory(2)->create(['execution_id' => $execution->id]);
         $other_execution_images = ExecutionImage::factory(4)->create(['execution_id'=>Execution::factory()->create()->id]);
@@ -423,6 +448,7 @@ class ExecutionTest extends TestCase
      * @test
      */
     public function test_execution_has_many_execution_videos(){
+
         $execution = Execution::factory()->create();
         $execution_videos = ExecutionVideo::factory(2)->create(['execution_id' => $execution->id]);
         $other_execution_videos = ExecutionVideo::factory(4)->create(['execution_id'=>Execution::factory()->create()->id]);
@@ -436,5 +462,73 @@ class ExecutionTest extends TestCase
 
         $execution->videos->each(fn($video) => $this->assertTrue($execution_videos->contains($video)));
         $execution->videos->each(fn($video) => $this->assertFalse($other_execution_videos->contains($video)));
+    }
+
+    public function test_moderation_status_id_is_required(){
+        $this->expectException(QueryException::class);
+        Execution::factory()->create(['moderation_status_id'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_must_exists_in_moderation_statuses_table(){
+        $moderation_status = ModerationStatus::factory()->create();
+        $recipe = Recipe::factory()->create();
+        Execution::factory()->create(['recipe_id' => $recipe->id, 'moderation_status_id' => $moderation_status->id]);
+        $this->assertDatabaseHas(Execution::class, ['recipe_id' => $recipe->id, 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->expectException(QueryException::class);
+        Execution::factory()->create(['recipe_id' => $recipe->id, 'moderation_status_id' => 111]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_elimination_gets_restricted_if_executions_depends_on_it(){
+        $moderation_status = ModerationStatus::factory()->create(['name'=>'test']);
+        $recipe = Recipe::factory()->create();
+        $execution = Execution::factory()->create(['recipe_id' => $recipe->id, 'moderation_status_id' => $moderation_status->id]);
+
+        $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseHas(Execution::class, ['recipe_id' => $recipe->id, 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->expectException(QueryException::class);
+        $moderation_status->delete();
+
+        $this->assertModelExists($moderation_status);
+        $this->assertModelExists($execution);
+
+        $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseHas(Execution::class, ['recipe_id' => $recipe->id, 'moderation_status_id'=>$moderation_status->id]);
+
+        $execution->delete();
+        $moderation_status->delete();
+
+        $this->assertDatabaseMissing('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseMissing(Execution::class, ['recipe_id' => $recipe->id, 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->assertModelMissing($execution);
+        $this->assertModelMissing($moderation_status);
+    }
+
+    /**
+     * @test
+     */
+    public function test_execution_belongs_to_moderation_status(){
+        $moderation_status = ModerationStatus::factory()->create();
+        $execution = Execution::factory()->create(['moderation_status_id' => $moderation_status->id]);
+        $this->assertNotNull($execution->moderationStatus);
+        $this->assertInstanceOf(ModerationStatus::class, $execution->moderationStatus);
+        $this->assertEquals($execution->moderationStatus->id, $moderation_status->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_defaults_to_approved_moderation_status_id(){
+        $recipe = Recipe::factory()->create();
+        $execution = Execution::factory()->create(['recipe_id'=>$recipe->id]);
+        $this->assertDatabaseHas(Execution::class, ['id'=>$execution->id, 'recipe_id'=>$recipe->id, 'moderation_status_id'=>ModerationStatuses::APPROVED->value]);
     }
 }

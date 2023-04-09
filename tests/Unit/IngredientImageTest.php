@@ -2,15 +2,21 @@
 
 namespace Tests\Unit;
 
+use App\Enums\ModerationStatuses;
 use App\Models\Ingredient;
 use App\Models\IngredientImage;
+use App\Models\ModerationStatus;
 use App\Models\User;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class IngredientImageTest extends TestCase{
     use RefreshDatabase;
+
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test
@@ -157,5 +163,76 @@ class IngredientImageTest extends TestCase{
 
         $this->assertNull($ingredient_image->fresh()->user_id);
         $this->assertDatabaseHas('ingredient_images', ['path'=>'ingredient_image_test', 'user_id'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_is_required(){
+        $this->expectException(QueryException::class);
+        IngredientImage::factory()->create(['moderation_status_id'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_must_exists_in_categories_table(){
+        $moderation_status = ModerationStatus::factory()->create();
+        $ingredient = Ingredient::factory()->create();
+        IngredientImage::factory()->create(['ingredient_id' => $ingredient->id, 'moderation_status_id' => $moderation_status->id]);
+        $this->assertDatabaseHas(IngredientImage::class, ['ingredient_id' => $ingredient->id, 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->expectException(QueryException::class);
+        IngredientImage::factory()->create(['ingredient_id' => $ingredient->id, 'moderation_status_id' => 111]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_elimination_gets_restricted_if_recipes_depends_on_it(){
+        $moderation_status = ModerationStatus::factory()->create(['name'=>'test']);
+        $ingredient = Ingredient::factory()->create();
+        $ingredient_image = IngredientImage::factory()->create(['ingredient_id' => $ingredient->id, 'moderation_status_id' => $moderation_status->id]);
+
+        $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseHas(IngredientImage::class, ['ingredient_id' => $ingredient->id, 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->expectException(QueryException::class);
+        $moderation_status->delete();
+
+        $this->assertModelExists($moderation_status);
+        $this->assertModelExists($ingredient_image);
+
+        $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseHas(IngredientImage::class, ['ingredient_id' => $ingredient->id, 'moderation_status_id'=>$moderation_status->id]);
+
+        $ingredient_image->delete();
+        $moderation_status->delete();
+
+        $this->assertDatabaseMissing('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseMissing('ingredient_images', ['ingredient_id' => $ingredient->id, 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->assertModelMissing($ingredient_image);
+        $this->assertModelMissing($moderation_status);
+    }
+
+    /**
+     * @test
+     */
+    public function test_ingredient_image_belongs_to_moderation_status(){
+        $moderation_status = ModerationStatus::factory()->create();
+        $ingredient_image = IngredientImage::factory()->create(['moderation_status_id' => $moderation_status->id]);
+        $this->assertNotNull($ingredient_image->moderationStatus);
+        $this->assertInstanceOf(ModerationStatus::class, $ingredient_image->moderationStatus);
+        $this->assertEquals($ingredient_image->moderationStatus->id, $moderation_status->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_defaults_to_pending_moderation_status_id(){
+        $ingredient = Ingredient::factory()->create();
+        $ingredient_image = IngredientImage::factory()->create(['ingredient_id' => $ingredient->id]);
+        $this->assertDatabaseHas(IngredientImage::class, ['id'=>$ingredient_image->id, 'ingredient_id'=>$ingredient->id, 'moderation_status_id'=>ModerationStatuses::PENDING_MODERATION->value]);
     }
 }

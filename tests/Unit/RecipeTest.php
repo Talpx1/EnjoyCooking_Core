@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Enums\ModerationStatuses;
 use App\Models\Award;
 use App\Models\Awardable;
 use App\Models\Comment;
@@ -18,9 +19,9 @@ use App\Models\Repost;
 use App\Models\Snack;
 use App\Models\Tag;
 use App\Models\Taggable;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Support\Str;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Database\QueryException;
@@ -37,6 +38,8 @@ class RecipeTest extends TestCase
 {
 
     use RefreshDatabase, WithFaker;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test
@@ -54,7 +57,7 @@ class RecipeTest extends TestCase
         $this->assertModelExists($recipe);
         $this->assertNotNull($recipe->slug);
         $this->assertEquals('test-123', $recipe->slug);
-        $this->assertDatabaseHas('recipes', ['slug'=>'test-123', 'title'=>'test 123']);
+        $this->assertDatabaseHas(Recipe::class, ['slug'=>'test-123', 'title'=>'test 123']);
     }
 
     /**
@@ -71,9 +74,9 @@ class RecipeTest extends TestCase
      */
     public function test_unique_slug_is_generated(){
         Recipe::factory()->create(['title'=>'test 123']);
-        $this->assertDatabaseHas('recipes', ['slug'=>'test-123', 'title'=>'test 123']);
+        $this->assertDatabaseHas(Recipe::class, ['slug'=>'test-123', 'title'=>'test 123']);
         Recipe::factory()->create(['title'=>'test 123 ']);
-        $this->assertDatabaseHas('recipes', ['slug'=>'test-123-2', 'title'=>'test 123 ']);
+        $this->assertDatabaseHas(Recipe::class, ['slug'=>'test-123-2', 'title'=>'test 123 ']);
     }
 
     /**
@@ -81,7 +84,7 @@ class RecipeTest extends TestCase
      */
     public function test_featured_image_path_is_nullable(){
         Recipe::factory()->create(['title' => 'test 123', 'featured_image_path'=>null]);
-        $this->assertDatabaseHas('recipes', ['title'=>'test 123', 'featured_image_path'=>null]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test 123', 'featured_image_path'=>null]);
     }
 
     /**
@@ -98,7 +101,7 @@ class RecipeTest extends TestCase
      */
     public function test_featured_image_thumbnail_path_is_nullable(){
         Recipe::factory()->create(['title' => 'test 123', 'featured_image_thumbnail_path'=>null]);
-        $this->assertDatabaseHas('recipes', ['title'=>'test 123', 'featured_image_thumbnail_path'=>null]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test 123', 'featured_image_thumbnail_path'=>null]);
     }
 
     /**
@@ -115,7 +118,7 @@ class RecipeTest extends TestCase
      */
     public function test_baking_minutes_is_nullable(){
         Recipe::factory()->create(['title' => 'test 123', 'baking_minutes'=>null]);
-        $this->assertDatabaseHas('recipes', ['title'=>'test 123', 'baking_minutes'=>null]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test 123', 'baking_minutes'=>null]);
     }
 
     /**
@@ -131,7 +134,7 @@ class RecipeTest extends TestCase
      */
     public function test_description_is_nullable(){
         Recipe::factory()->create(['title' => 'test 123', 'description'=>null]);
-        $this->assertDatabaseHas('recipes', ['title'=>'test 123', 'description'=>null]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test 123', 'description'=>null]);
     }
 
     /**
@@ -150,7 +153,7 @@ class RecipeTest extends TestCase
             ['title' => 'test 123'],
             Arr::except(Recipe::factory()->definition(), ['share_count', 'title'])
         ))->save();
-        $this->assertDatabaseHas('recipes', ['title'=>'test 123', 'share_count'=>0]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test 123', 'share_count'=>0]);
     }
 
     /**
@@ -167,7 +170,7 @@ class RecipeTest extends TestCase
     public function test_difficulty_level_id_must_exists_in_difficulty_levels_table(){
         $difficulty_level = DifficultyLevel::factory()->create();
         Recipe::factory()->create(['title' => 'test', 'difficulty_level_id' => $difficulty_level->id]);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'difficulty_level_id'=>$difficulty_level->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'difficulty_level_id'=>$difficulty_level->id]);
 
         $this->expectException(QueryException::class);
         Recipe::factory()->create(['title' => 'test 2', 'difficulty_level_id' => 111]);
@@ -181,7 +184,7 @@ class RecipeTest extends TestCase
         $recipe = Recipe::factory()->create(['title' => 'test', 'difficulty_level_id' => $difficulty_level->id]);
 
         $this->assertDatabaseHas('difficulty_levels', ['name'=>'test']);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'difficulty_level_id'=>$difficulty_level->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'difficulty_level_id'=>$difficulty_level->id]);
 
         $this->expectException(QueryException::class);
         $difficulty_level->delete();
@@ -190,7 +193,7 @@ class RecipeTest extends TestCase
         $this->assertModelExists($recipe);
 
         $this->assertDatabaseHas('difficulty_levels', ['name'=>'test']);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'difficulty_level_id'=>$difficulty_level->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'difficulty_level_id'=>$difficulty_level->id]);
 
         $recipe->delete();
         $difficulty_level->delete();
@@ -207,7 +210,7 @@ class RecipeTest extends TestCase
      */
     public function test_parent_recipe_id_is_nullable(){
         Recipe::factory()->create(['title' => 'test 123', 'parent_recipe_id'=>null]);
-        $this->assertDatabaseHas('recipes', ['title'=>'test 123', 'parent_recipe_id'=>null]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test 123', 'parent_recipe_id'=>null]);
     }
 
     /**
@@ -216,7 +219,7 @@ class RecipeTest extends TestCase
     public function test_parent_recipe_id_must_exists_in_recipes_table(){
         $parent_recipe = Recipe::factory()->create();
         Recipe::factory()->create(['title' => 'test', 'parent_recipe_id' => $parent_recipe->id]);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'parent_recipe_id'=>$parent_recipe->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'parent_recipe_id'=>$parent_recipe->id]);
 
         $this->expectException(QueryException::class);
         Recipe::factory()->create(['title' => 'test 2', 'parent_recipe_id' => 111]);
@@ -229,8 +232,8 @@ class RecipeTest extends TestCase
         $parent_recipe = Recipe::factory()->create(['title'=>'parent']);
         $child_recipe = Recipe::factory()->create(['title' => 'child', 'parent_recipe_id' => $parent_recipe->id]);
 
-        $this->assertDatabaseHas('recipes', ['title'=>'parent']);
-        $this->assertDatabaseHas('recipes', ['title'=>'child', 'parent_recipe_id'=>$parent_recipe->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'parent']);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'child', 'parent_recipe_id'=>$parent_recipe->id]);
         $this->assertEquals($parent_recipe->id, $child_recipe->parent_recipe_id);
 
         $parent_recipe->delete();
@@ -242,7 +245,7 @@ class RecipeTest extends TestCase
         $this->assertDatabaseMissing('recipes', ['title'=>'child', 'parent_recipe_id'=>$parent_recipe->id]);
 
         $this->assertNull($child_recipe->fresh()->parent_recipe_id);
-        $this->assertDatabaseHas('recipes', ['title'=>'child', 'parent_recipe_id'=>null]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'child', 'parent_recipe_id'=>null]);
     }
 
     /**
@@ -259,7 +262,7 @@ class RecipeTest extends TestCase
     public function test_course_id_must_exists_in_courses_table(){
         $course = Course::factory()->create();
         Recipe::factory()->create(['title' => 'test', 'course_id' => $course->id]);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'course_id'=>$course->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'course_id'=>$course->id]);
 
         $this->expectException(QueryException::class);
         Recipe::factory()->create(['title' => 'test 2', 'course_id' => 111]);
@@ -273,7 +276,7 @@ class RecipeTest extends TestCase
         $recipe = Recipe::factory()->create(['title' => 'test', 'course_id' => $course->id]);
 
         $this->assertDatabaseHas('courses', ['name'=>'test']);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'course_id'=>$course->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'course_id'=>$course->id]);
 
         $this->expectException(QueryException::class);
         $course->delete();
@@ -282,7 +285,7 @@ class RecipeTest extends TestCase
         $this->assertModelExists($recipe);
 
         $this->assertDatabaseHas('courses', ['name'=>'test']);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'course_id'=>$course->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'course_id'=>$course->id]);
 
         $recipe->delete();
         $course->delete();
@@ -308,7 +311,7 @@ class RecipeTest extends TestCase
     public function test_user_id_must_exists_in_users_table(){
         $user = User::factory()->create();
         Recipe::factory()->create(['title' => 'test', 'user_id' => $user->id]);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'user_id'=>$user->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'user_id'=>$user->id]);
 
         $this->expectException(QueryException::class);
         Recipe::factory()->create(['title' => 'test 2', 'user_id' => 111]);
@@ -326,9 +329,9 @@ class RecipeTest extends TestCase
 
         $this->assertDatabaseHas('users', ['username'=>'user_test']);
         $this->assertDatabaseHas('users', ['username'=>'other_user_test']);
-        $this->assertDatabaseHas('recipes', ['title' => 'user recipe', 'user_id' => $user->id]);
-        $this->assertDatabaseHas('recipes', ['title' => 'user recipe 2', 'user_id' => $user->id]);
-        $this->assertDatabaseHas('recipes', ['title' => 'other user recipe', 'user_id' => $other_user->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title' => 'user recipe', 'user_id' => $user->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title' => 'user recipe 2', 'user_id' => $user->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title' => 'other user recipe', 'user_id' => $other_user->id]);
 
         $user->delete();
 
@@ -341,7 +344,7 @@ class RecipeTest extends TestCase
         $this->assertModelMissing($recipe2);
 
         $this->assertDatabaseHas('users', ['username'=>'other_user_test']);
-        $this->assertDatabaseHas('recipes', ['title' => 'other user recipe', 'user_id' => $other_user->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title' => 'other user recipe', 'user_id' => $other_user->id]);
 
         $this->assertModelExists($other_recipe);
     }
@@ -360,7 +363,7 @@ class RecipeTest extends TestCase
     public function test_category_id_must_exists_in_categories_table(){
         $category = Category::factory()->create();
         Recipe::factory()->create(['title' => 'test', 'category_id' => $category->id]);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'category_id'=>$category->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'category_id'=>$category->id]);
 
         $this->expectException(QueryException::class);
         Recipe::factory()->create(['title' => 'test 2', 'category_id' => 111]);
@@ -374,7 +377,7 @@ class RecipeTest extends TestCase
         $recipe = Recipe::factory()->create(['title' => 'test', 'category_id' => $category->id]);
 
         $this->assertDatabaseHas('categories', ['name'=>'test']);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'category_id'=>$category->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'category_id'=>$category->id]);
 
         $this->expectException(QueryException::class);
         $category->delete();
@@ -383,7 +386,7 @@ class RecipeTest extends TestCase
         $this->assertModelExists($recipe);
 
         $this->assertDatabaseHas('categories', ['name'=>'test']);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'category_id'=>$category->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'category_id'=>$category->id]);
 
         $recipe->delete();
         $category->delete();
@@ -406,10 +409,10 @@ class RecipeTest extends TestCase
     /**
      * @test
      */
-    public function test_moderation_status_id_must_exists_in_categories_table(){
+    public function test_moderation_status_id_must_exists_in_moderation_statuses_table(){
         $moderation_status = ModerationStatus::factory()->create();
         Recipe::factory()->create(['title' => 'test', 'moderation_status_id' => $moderation_status->id]);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'moderation_status_id'=>$moderation_status->id]);
 
         $this->expectException(QueryException::class);
         Recipe::factory()->create(['title' => 'test 2', 'moderation_status_id' => 111]);
@@ -423,7 +426,7 @@ class RecipeTest extends TestCase
         $recipe = Recipe::factory()->create(['title' => 'test', 'moderation_status_id' => $moderation_status->id]);
 
         $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'moderation_status_id'=>$moderation_status->id]);
 
         $this->expectException(QueryException::class);
         $moderation_status->delete();
@@ -432,7 +435,7 @@ class RecipeTest extends TestCase
         $this->assertModelExists($recipe);
 
         $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'moderation_status_id'=>$moderation_status->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'moderation_status_id'=>$moderation_status->id]);
 
         $recipe->delete();
         $moderation_status->delete();
@@ -442,6 +445,25 @@ class RecipeTest extends TestCase
 
         $this->assertModelMissing($recipe);
         $this->assertModelMissing($moderation_status);
+    }
+
+    /**
+     * @test
+     */
+    public function test_recipe_belongs_to_moderation_status(){
+        $moderation_status = ModerationStatus::factory()->create();
+        $recipe = Recipe::factory()->create(['moderation_status_id' => $moderation_status->id]);
+        $this->assertNotNull($recipe->moderationStatus);
+        $this->assertInstanceOf(ModerationStatus::class, $recipe->moderationStatus);
+        $this->assertEquals($recipe->moderationStatus->id, $moderation_status->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_defaults_to_pending_moderation_status_id(){
+        $recipe = Recipe::factory()->create();
+        $this->assertDatabaseHas(Recipe::class, ['id'=>$recipe->id, 'title'=>$recipe->title, 'moderation_status_id'=>ModerationStatuses::PENDING_MODERATION->value]);
     }
 
     /**
@@ -458,7 +480,7 @@ class RecipeTest extends TestCase
     public function test_visibility_status_id_must_exists_in_categories_table(){
         $visibility_status = VisibilityStatus::factory()->create();
         Recipe::factory()->create(['title' => 'test', 'visibility_status_id' => $visibility_status->id]);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'visibility_status_id'=>$visibility_status->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'visibility_status_id'=>$visibility_status->id]);
 
         $this->expectException(QueryException::class);
         Recipe::factory()->create(['title' => 'test 2', 'visibility_status_id' => 111]);
@@ -472,7 +494,7 @@ class RecipeTest extends TestCase
         $recipe = Recipe::factory()->create(['title' => 'test', 'visibility_status_id' => $visibility_status->id]);
 
         $this->assertDatabaseHas('visibility_statuses', ['name'=>'test']);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'visibility_status_id'=>$visibility_status->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'visibility_status_id'=>$visibility_status->id]);
 
         $this->expectException(QueryException::class);
         $visibility_status->delete();
@@ -481,7 +503,7 @@ class RecipeTest extends TestCase
         $this->assertModelExists($recipe);
 
         $this->assertDatabaseHas('visibility_statuses', ['name'=>'test']);
-        $this->assertDatabaseHas('recipes', ['title'=>'test', 'visibility_status_id'=>$visibility_status->id]);
+        $this->assertDatabaseHas(Recipe::class, ['title'=>'test', 'visibility_status_id'=>$visibility_status->id]);
 
         $recipe->delete();
         $visibility_status->delete();
@@ -625,17 +647,6 @@ class RecipeTest extends TestCase
         $this->assertNotNull($recipe->category);
         $this->assertInstanceOf(Category::class, $recipe->category);
         $this->assertEquals($recipe->category->id, $category->id);
-    }
-
-    /**
-     * @test
-     */
-    public function test_recipe_belongs_to_moderation_status(){
-        $moderation_status = ModerationStatus::factory()->create();
-        $recipe = Recipe::factory()->create(['moderation_status_id' => $moderation_status->id]);
-        $this->assertNotNull($recipe->moderationStatus);
-        $this->assertInstanceOf(ModerationStatus::class, $recipe->moderationStatus);
-        $this->assertEquals($recipe->moderationStatus->id, $moderation_status->id);
     }
 
     /**

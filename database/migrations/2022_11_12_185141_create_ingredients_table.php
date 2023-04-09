@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\ModerationStatuses;
+use App\Models\ModerationStatus;
 use App\Models\User;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
@@ -22,6 +24,7 @@ return new class extends Migration
             $table->string('featured_image_thumbnail_path')->nullable()->unique();
             $table->text('description');
             $table->foreignIdFor(User::class)->nullable()->constrained()->nullOnDelete()->cascadeOnUpdate();
+            $table->foreignIdFor(ModerationStatus::class)->default(ModerationStatuses::PENDING_MODERATION->value)->constrained()->restrictOnDelete()->cascadeOnUpdate();
             $table->timestamps();
         });
     }

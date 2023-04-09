@@ -6,6 +6,7 @@ use App\Models\Favorite;
 use App\Models\Recipe;
 use App\Models\Snack;
 use App\Models\User;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,7 +14,8 @@ use Tests\TestCase;
 class FavoriteTest extends TestCase
 {
     use RefreshDatabase;
-
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
     /**
      * @test
      */
@@ -42,6 +44,7 @@ class FavoriteTest extends TestCase
      * @test
      */
     public function test_user_id_must_exists_in_users_table(){
+
         $user = User::factory()->create();
         Favorite::factory()->create(['user_id' => $user->id]);
         $this->assertDatabaseHas('favorites', ['user_id'=>$user->id]);
@@ -55,6 +58,7 @@ class FavoriteTest extends TestCase
      * @test
      */
     public function test_favorite_gets_deleted_if_user_gets_deleted(){
+
         $user = User::factory()->create();
         $favorite = Favorite::factory()->create(['user_id' => $user->id]);
         $this->assertDatabaseHas('favorites', ['user_id'=>$user->id]);
@@ -71,6 +75,7 @@ class FavoriteTest extends TestCase
      * @test
      */
     public function test_favorite_belongs_to_user(){
+
         $user = User::factory()->create();
         $favorite = Favorite::factory()->create(['user_id' => $user->id]);
         $this->assertNotNull($favorite->user);
@@ -82,6 +87,7 @@ class FavoriteTest extends TestCase
      * @test
      */
     public function test_morphs_to_favoritable(){
+
         $recipe = Recipe::factory()->create();
         $snack = Snack::factory()->create();
 
@@ -101,6 +107,7 @@ class FavoriteTest extends TestCase
      * @test
      */
     public function test_combination_of_favoritable_id_favoritable_type_user_id_must_be_unique(){
+
         $recipe = Recipe::factory()->create();
         $user = User::factory()->create();
         $user2 = User::factory()->create();

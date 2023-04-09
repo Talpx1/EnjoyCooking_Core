@@ -2,9 +2,12 @@
 
 namespace Tests\Unit;
 
+use App\Enums\ModerationStatuses;
 use App\Models\Ingredient;
 use App\Models\IngredientVideo;
+use App\Models\ModerationStatus;
 use App\Models\User;
+use Database\Seeders\ModerationStatusSeeder;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,6 +16,8 @@ class IngredientVideoTest extends TestCase
 {
 
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test
@@ -142,5 +147,76 @@ class IngredientVideoTest extends TestCase
 
         $this->assertNull($ingredient_video->fresh()->user_id);
         $this->assertDatabaseHas('ingredient_videos', ['path'=>'ingredient_video_test', 'user_id'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_is_required(){
+        $this->expectException(QueryException::class);
+        IngredientVideo::factory()->create(['moderation_status_id'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_must_exists_in_moderation_statuses_table(){
+        $moderation_status = ModerationStatus::factory()->create();
+        $ingredient = Ingredient::factory()->create();
+        IngredientVideo::factory()->create(['ingredient_id' => $ingredient->id, 'moderation_status_id' => $moderation_status->id]);
+        $this->assertDatabaseHas(IngredientVideo::class, ['ingredient_id' => $ingredient->id, 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->expectException(QueryException::class);
+        IngredientVideo::factory()->create(['ingredient_id' => $ingredient->id, 'moderation_status_id' => 111]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_elimination_gets_restricted_if_recipes_depends_on_it(){
+        $moderation_status = ModerationStatus::factory()->create(['name'=>'test']);
+        $ingredient = Ingredient::factory()->create();
+        $ingredient_video = IngredientVideo::factory()->create(['ingredient_id' => $ingredient->id, 'moderation_status_id' => $moderation_status->id]);
+
+        $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseHas(IngredientVideo::class, ['ingredient_id' => $ingredient->id, 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->expectException(QueryException::class);
+        $moderation_status->delete();
+
+        $this->assertModelExists($moderation_status);
+        $this->assertModelExists($ingredient_video);
+
+        $this->assertDatabaseHas('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseHas(IngredientVideo::class, ['ingredient_id' => $ingredient->id, 'moderation_status_id'=>$moderation_status->id]);
+
+        $ingredient_video->delete();
+        $moderation_status->delete();
+
+        $this->assertDatabaseMissing('moderation_statuses', ['name'=>'test']);
+        $this->assertDatabaseMissing('ingredient_videos', ['ingredient_id' => $ingredient->id, 'moderation_status_id'=>$moderation_status->id]);
+
+        $this->assertModelMissing($ingredient_video);
+        $this->assertModelMissing($moderation_status);
+    }
+
+    /**
+     * @test
+     */
+    public function test_ingredient_video_belongs_to_moderation_status(){
+        $moderation_status = ModerationStatus::factory()->create();
+        $ingredient_video = IngredientVideo::factory()->create(['moderation_status_id' => $moderation_status->id]);
+        $this->assertNotNull($ingredient_video->moderationStatus);
+        $this->assertInstanceOf(ModerationStatus::class, $ingredient_video->moderationStatus);
+        $this->assertEquals($ingredient_video->moderationStatus->id, $moderation_status->id);
+    }
+
+    /**
+     * @test
+     */
+    public function test_moderation_status_id_defaults_to_pending_moderation_status_id(){
+        $ingredient = Ingredient::factory()->create();
+        $ingredient_video = IngredientVideo::factory()->create(['ingredient_id' => $ingredient->id]);
+        $this->assertDatabaseHas(IngredientVideo::class, ['id'=>$ingredient_video->id, 'ingredient_id'=>$ingredient->id, 'moderation_status_id'=>ModerationStatuses::PENDING_MODERATION->value]);
     }
 }

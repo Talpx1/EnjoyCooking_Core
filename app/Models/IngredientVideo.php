@@ -21,4 +21,8 @@ class IngredientVideo extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function moderationStatus(){
+        return $this->belongsTo(ModerationStatus::class);
+    }
 }

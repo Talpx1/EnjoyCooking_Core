@@ -13,6 +13,7 @@ use App\Models\OauthAccessToken;
 use App\Models\OauthRefreshToken;
 use App\Models\Rating;
 use App\Models\Snack;
+use Database\Seeders\ModerationStatusSeeder;
 use Tests\Seeders\PermissionsAndRolesSeeder;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -33,6 +34,8 @@ class UserTest extends TestCase
 {
 
     use RefreshDatabase;
+    protected $seed = true;
+    protected $seeder = ModerationStatusSeeder::class;
 
     /**
      * @test

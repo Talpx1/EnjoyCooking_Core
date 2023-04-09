@@ -16,4 +16,39 @@ class ModerationStatus extends Model
     {
         return $this->hasMany(Recipe::class);
     }
+
+    public function ingredients()
+    {
+        return $this->hasMany(Ingredient::class);
+    }
+
+    public function ingredientImages()
+    {
+        return $this->hasMany(IngredientImage::class);
+    }
+
+    public function ingredientVideos()
+    {
+        return $this->hasMany(IngredientVideo::class);
+    }
+
+    public function tags()
+    {
+        return $this->hasMany(Tag::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
+    }
+
+    public function snacks()
+    {
+        return $this->hasMany(Snack::class);
+    }
+
+    public function executions()
+    {
+        return $this->hasMany(Execution::class);
+    }
 }
