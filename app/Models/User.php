@@ -18,12 +18,18 @@ class User extends Authenticatable {
     use HasApiTokens, HasFactory, Notifiable, HasRoles, HasRandomFactory, NotifyDeletionToMorphs;
 
 
-    protected $guarded = [
-        'id',
-        'created_at',
-        'updated_at',
-        'email_verified_at',
-        'remember_token'
+    protected $fillable = [
+        'first_name',
+        'last_name',
+        'email',
+        'username',
+        'company_name',
+        'date_of_birth',
+        'instagram_url',
+        'website_url',
+        'image_path',
+        'banned',
+        'password',
     ];
 
     /**
