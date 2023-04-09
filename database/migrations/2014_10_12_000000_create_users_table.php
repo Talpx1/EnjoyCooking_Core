@@ -27,6 +27,7 @@ return new class extends Migration
             $table->string('instagram_url')->nullable();
             $table->string('website_url')->nullable();
             $table->string('image_path')->nullable()->unique();
+            $table->boolean('banned')->default(false);
             $table->foreignIdFor(ProfessionGroup::class)->nullable()->constrained()->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(Gender::class)->nullable()->constrained()->restrictOnDelete()->cascadeOnUpdate();
             $table->foreignIdFor(UserType::class)->constrained()->restrictOnDelete()->cascadeOnUpdate();

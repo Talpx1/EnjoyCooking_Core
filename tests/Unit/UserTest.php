@@ -247,6 +247,22 @@ class UserTest extends TestCase
     /**
      * @test
      */
+    public function test_banned_is_required(){
+        $this->expectException(QueryException::class);
+        User::factory()->create(['banned'=>null]);
+    }
+
+    /**
+     * @test
+     */
+    public function test_banned_defaults_to_false(){
+        $user = User::factory()->create();
+        $this->assertDatabaseHas(User::class, ['first_name'=>$user->first_name, 'last_name'=>$user->last_name, 'id'=>$user->id, 'banned'=>false]);
+    }
+
+    /**
+     * @test
+     */
     public function test_user_belongs_to_many_badges(){
         $user = User::factory()->create();
         $badges = Badge::factory(3)->create()->each(fn($badge)=>BadgeUser::factory()->create(['user_id'=>$user->id,'badge_id'=>$badge->id]));

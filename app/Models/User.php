@@ -17,15 +17,11 @@ use App\Models\Traits\HasRandomFactory;
 class User extends Authenticatable {
     use HasApiTokens, HasFactory, Notifiable, HasRoles, HasRandomFactory, NotifyDeletionToMorphs;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
+
+    protected $guarded = [
+        'id',
+        'created_at',
+        'updated_at',
     ];
 
     /**
@@ -51,6 +47,7 @@ class User extends Authenticatable {
     protected $casts = [
         'email_verified_at' => 'datetime',
         'date_of_birth' => 'date',
+        'banned' => 'boolean',
     ];
 
     private static $morphs = [Follow::class];
